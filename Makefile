@@ -1,4 +1,4 @@
-PACKAGE_VERSION = 1.3.12
+PACKAGE_VERSION = 1.3.13
 
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:6.0
