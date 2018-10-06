@@ -18,7 +18,7 @@ static NSData *dataFromHexString(NSString *string) {
         whole_byte = strtol(byte_chars, NULL, 16);
         [data appendBytes:&whole_byte length:1];
     }
-    return data;
+    return [data retain];
 }
 
 CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
