@@ -200,6 +200,8 @@ static const CFCharacterSetInlineBuffer *__CFStringGetGenderModifierBaseCharacte
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F937, 3)); // SHRUG ~ JUGGLING
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3)); // WRESTLERS ~ HANDBALL
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D6, 10)); // PERSON IN STEAMY ROOM ~ ZOMBIE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B0, 4)); // RED HAIR / CURLY HAIR / BALD / WHITE HAIR
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B9, 1)); // SUPERVILLIAIN
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
@@ -228,6 +230,7 @@ static const CFCharacterSetInlineBuffer *__CFStringGetProfessionModifierBaseChar
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x2708, 1)); // ✈️U+2708 AIRPLANE // Pilot - 0x2708
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F680, 1)); // 🚀U+1F680 ROCKET // Astronaut - 0xD83D 0xDE80
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x2696, 1)); // ⚖️U+2696 SCALES // Judge - 0x2696
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B0, 4)); // RED HAIR / CURLY HAIR / BALD / WHITE HAIR
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
@@ -280,6 +283,8 @@ static const CFCharacterSetInlineBuffer *__CFStringGetFitzpatrickModifierBaseCha
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D1, 13)); // ADULT ~ ELF
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x26F9, 1)); // U+26F9 PERSON WITH BALL
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1)); // U+1F3CB WEIGHT LIFTER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B5, 2)); // LEG / FOOT
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B0, 4)); // RED HAIR / CURLY HAIR / BALD / WHITE HAIR
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
