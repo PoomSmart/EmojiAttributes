@@ -170,36 +170,36 @@ static const CFCharacterSetInlineBuffer *__CFStringGetGenderModifierBaseCharacte
     static dispatch_once_t initOnce;
     dispatch_once(&initOnce, ^{
         CFMutableCharacterSetRef cset = CFCharacterSetCreateMutable(NULL);
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x26F9, 1));         // PERSON WITH BALL
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C3, 1));         // RUNNER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C4, 1));         // SURFER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CA, 1));         // SWIMMER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1));         // WEIGHT LIFTER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CC, 1));         // GOLFER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46E, 1));         // POLICE OFFICER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46F, 1));         // TWO WOMEN DANCING
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F471, 1));         // PERSON WITH BLOND HAIR
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F473, 1));         // MAN WITH TURBAN
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F477, 1));         // CONSTRUCTION WORKER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F481, 1));         // INFORMATION DESK PERSON
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F482, 1));         // GUARDSMAN
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F486, 1));         // FACE MASSAGE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F487, 1));         // HAIRCUT
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F575, 1));         // SLEUTH OR SPY
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F645, 1));         // FACE WITH NO GOOD GESTURE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F646, 1));         // FACE WITH OK GESTURE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F647, 1));         // PERSON BOWING DEEPLY
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64B, 1));         // HAPPY PERSON RAISING ONE HAND
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64D, 1));         // PERSON FROWNING
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64E, 1));         // PERSON WITH POUTING FACE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6A3, 1));         // ROWBOAT
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B4, 1));         // BICYCLIST
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B5, 1));         // MOUNTAIN BICYCLIST
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B6, 1));         // PEDESTRIAN
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F926, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F937, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D6, 10));
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x26F9, 1)); // PERSON WITH BALL
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C3, 1)); // RUNNER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C4, 1)); // SURFER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CA, 1)); // SWIMMER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1)); // WEIGHT LIFTER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CC, 1)); // GOLFER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46E, 1)); // POLICE OFFICER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46F, 1)); // TWO WOMEN DANCING
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F471, 1)); // PERSON WITH BLOND HAIR
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F473, 1)); // MAN WITH TURBAN
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F477, 1)); // CONSTRUCTION WORKER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F481, 1)); // INFORMATION DESK PERSON
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F482, 1)); // GUARDSMAN
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F486, 1)); // FACE MASSAGE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F487, 1)); // HAIRCUT
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F575, 1)); // SLEUTH OR SPY
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F645, 1)); // FACE WITH NO GOOD GESTURE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F646, 1)); // FACE WITH OK GESTURE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F647, 1)); // PERSON BOWING DEEPLY
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64B, 1)); // HAPPY PERSON RAISING ONE HAND
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64D, 1)); // PERSON FROWNING
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64E, 1)); // PERSON WITH POUTING FACE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6A3, 1)); // ROWBOAT
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B4, 1)); // BICYCLIST
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B5, 1)); // MOUNTAIN BICYCLIST
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B6, 1)); // PEDESTRIAN
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F926, 1)); // FACE PALM
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F937, 3)); // SHRUG ~ JUGGLING
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3)); // WRESTLERS ~ HANDBALL
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D6, 10)); // PERSON IN STEAMY ROOM ~ ZOMBIE
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
@@ -239,47 +239,47 @@ static const CFCharacterSetInlineBuffer *__CFStringGetFitzpatrickModifierBaseCha
     static dispatch_once_t initOnce;
     dispatch_once(&initOnce, ^{
         CFMutableCharacterSetRef cset = CFCharacterSetCreateMutable(NULL);
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x261D, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x2639, 2));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x270A, 4));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F385, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C2, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C7, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CA, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CC, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F442, 2));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F446, 0x1F451 - 0x1F446));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F466, 4));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46A, 6));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46E, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F470, 9));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F47C, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F47F, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F481, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F485, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F4AA, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F574, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F575, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F57A, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F590, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F595, 2));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F600, 0x38));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F641, 7));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64B, 5));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6A3, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B4, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6C0, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6CC, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F910, 0x1F916 - 0x1F910));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F917, 8));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F926, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F930, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F933, 4));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F937, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D1, 0xD));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x26F9, 1));
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1));
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x261D, 1)); // WHITE UP POINTING INDEX
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x2639, 2)); // WHITE FROWNING FACE ~ WHITE SMILING FACE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x270A, 4)); // RAISED FIST ~ WRITING HAND
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F385, 1)); // FATHER CHRISTMAS
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C2, 3)); // SNOWBOARDER ~ SURFER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C7, 1)); // HORSE RACING
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CA, 1)); // SWIMMER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CC, 1)); // GOLFER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F442, 2)); // EAR ~ NOSE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F446, 0x1F451 - 0x1F446)); // WHITE UP POINTING BACKHAND INDEX ~ OPEN HANDS SIGN
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F466, 4)); // BOY ~ WOMAN
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46A, 6)); // FAMILY…U+1F46F WOMAN WITH BUNNY EARS
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F470, 0x1F479 - 0x1F470)); // BRIDE WITH VEIL ~ PRINCESS
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F47C, 1)); // BABY ANGEL
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F47F, 1)); // IMP
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F481, 3)); // INFORMATION DESK PERSON ~ DANCER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F485, 3)); // NAIL POLISH ~ HAIRCUT
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F4AA, 1)); // FLEXED BICEPS
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F574, 1)); // MAN IN BUSINESS SUIT LEVITATING
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F575, 1)); // SLEUTH OR SPY
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F57A, 1)); // MAN DANCING
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F590, 1)); // RAISED HAND WITH FINGERS SPLAYED
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F595, 2)); // REVERSED HAND WITH MIDDLE FINGER EXTENDED ~ RAISED HAND WITH PART BETWEEN MIDDLE AND RING FINGERS
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F600, 0x1F638 - 0x1F600)); // GRINNING FACE ~ FACE WITH MEDICAL MASK
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F641, 0x1F648 - 0x1F641)); // SLIGHTLY FROWNING FACE ~ PERSON BOWING DEEPLY
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64B, 0x1F650 - 0x1F64B)); // HAPPY PERSON RAISING ONE HAND ~ PERSON WITH FOLDED HANDS
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6A3, 1)); // ROWBOAT
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B4, 0x1F6B7 - 0x1F6B4)); // BICYCLIST ~ PEDESTRIAN
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6C0, 1)); // BATH
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6CC, 1)); // SLEEPING ACCOMMODATION
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F910, 0x1F916 - 0x1F910)); // U+1F910 ZIPPER-MOUTH FACE…U+1F915 FACE WITH HEAD-BANDAGE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F917, 8)); // U+1F917 HUGGING FACE…U+1F91E HAND WITH INDEX AND MIDDLE FINGERS CROSSED
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F91F, 1)); // LOVE-YOU GESTURE
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F926, 1)); // FACE PALM
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F930, 3)); // PREGNANT WOMAN ~ PALMS UP TOGETHER
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F933, 4)); // SELFIE ~ MOTHER CHRISTMAS
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F937, 3)); // SHRUG ~ JUGGLING
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3)); // WRESTLERS ~ HANDBALL
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D1, 13)); // ADULT ~ ELF
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x26F9, 1)); // U+26F9 PERSON WITH BALL
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1)); // U+1F3CB WEIGHT LIFTER
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
