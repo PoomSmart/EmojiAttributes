@@ -389,22 +389,22 @@ bool (*advanceByCombiningCharacterSequence)(const UChar *&, const UChar *, UChar
     isCJKIdeograph = (bool (*)(UChar32))MSFindSymbol(ref, "__ZN7WebCore11FontCascade14isCJKIdeographEi");
     if (isCJKIdeograph == NULL)
         isCJKIdeograph = (bool (*)(UChar32))MSFindSymbol(ref, "__ZN7WebCore4Font14isCJKIdeographEi");
-    HBLogDebug(@"Found isCJKIdeograph: %d", isCJKIdeograph != NULL);
+    HBLogDebug(@"[WebCoreHack] Found isCJKIdeograph: %d", isCJKIdeograph != NULL);
     isCJKIdeographOrSymbol = (bool (*)(UChar32))MSFindSymbol(ref, "__ZN7WebCore11FontCascade22isCJKIdeographOrSymbolEi");
     if (isCJKIdeographOrSymbol == NULL)
         isCJKIdeographOrSymbol = (bool (*)(UChar32))MSFindSymbol(ref, "__ZN7WebCore4Font22isCJKIdeographOrSymbolEi");
-    HBLogDebug(@"Found isCJKIdeographOrSymbol: %d", isCJKIdeographOrSymbol != NULL);
+    HBLogDebug(@"[WebCoreHack] Found isCJKIdeographOrSymbol: %d", isCJKIdeographOrSymbol != NULL);
     RenderText_originalText = (String (*)(void *))MSFindSymbol(ref, "__ZNK7WebCore10RenderText12originalTextEv");
-    HBLogDebug(@"Found RenderText_originalText: %d", RenderText_originalText != NULL);
+    HBLogDebug(@"[WebCoreHack] Found RenderText_originalText: %d", RenderText_originalText != NULL);
     RenderText_previousOffsetForBackwardDeletion = (int (*)(void *, int))MSFindSymbol(ref, "__ZNK7WebCore10RenderText33previousOffsetForBackwardDeletionEi");
-    HBLogDebug(@"Found RenderText_previousOffsetForBackwardDeletion: %d", RenderText_previousOffsetForBackwardDeletion != NULL);
+    HBLogDebug(@"[WebCoreHack] Found RenderText_previousOffsetForBackwardDeletion: %d", RenderText_previousOffsetForBackwardDeletion != NULL);
     characterRangeCodePath = (WebCore::FontCascade::CodePath (*)(const UChar *, unsigned))MSFindSymbol(ref, "__ZN7WebCore11FontCascade22characterRangeCodePathEPKtj"); // missing in iOS 5
     if (characterRangeCodePath == NULL)
         characterRangeCodePath = (WebCore::FontCascade::CodePath (*)(const UChar *, unsigned))MSFindSymbol(ref, "__ZN7WebCore4Font22characterRangeCodePathEPKtj");
-    HBLogDebug(@"Found characterRangeCodePath: %d", characterRangeCodePath != NULL);
+    HBLogDebug(@"[WebCoreHack] Found characterRangeCodePath: %d", characterRangeCodePath != NULL);
 #if __LP64__ || !TARGET_OS_SIMULATOR
     advanceByCombiningCharacterSequence = (bool (*)(const UChar *&, const UChar *, UChar32&, unsigned&))MSFindSymbol(ref, "__ZN7WebCoreL35advanceByCombiningCharacterSequenceERPKtS1_RiRj"); // missing in iOS 5
-    HBLogDebug(@"Found advanceByCombiningCharacterSequence: %d", advanceByCombiningCharacterSequence != NULL);
+    HBLogDebug(@"[WebCoreHack] Found advanceByCombiningCharacterSequence: %d", advanceByCombiningCharacterSequence != NULL);
 #endif
     %init;
 }

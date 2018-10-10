@@ -1,10 +1,10 @@
-PACKAGE_VERSION = 1.3.14d
+PACKAGE_VERSION = 1.3.14e
 
 ifeq ($(SIMULATOR),1)
-	TARGET = simulator:clang:latest:10.0
+	TARGET = simulator:clang:latest:8.0
 	ARCHS = x86_64 i386
 else
-	TARGET = iphone:clang:11.0:5.0
+	TARGET = iphone:clang:latest:5.0
 endif
 
 include $(THEOS)/makefiles/common.mk
@@ -15,7 +15,7 @@ else
 	LIBRARY_NAME = EmojiAttributes
 	EmojiAttributes_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries/EmojiAttributes
 endif
-EmojiAttributes_FILES = TextInputHack.xm CharacterSet.xm WebCoreHack.xm CoreFoundationHack.xm
+EmojiAttributes_FILES = TextInputHack.xm CharacterSetHack.xm WebCoreHack.xm CoreFoundationHack.xm # CoreTextHack.xm
 EmojiAttributes_CFLAGS = -std=c++11
 EmojiAttributes_EXTRA_FRAMEWORKS = CydiaSubstrate
 EmojiAttributes_LIBRARIES = icucore

@@ -1,7 +1,7 @@
-#import "CharacterSet.h"
+#import "CharacterSetHack.h"
 
 CFStringRef iOS111Emojis = CFSTR("🤩🤨🤯🤪🤬🤮🤫🤭🧐🧒🧑🧓🧕🧔🤱🧙‍♀️🧙‍♂️🧚‍♀️🧚‍♂️🧛‍♀️🧛‍♂️🧜‍♀️🧜‍♂️🧝‍♀️🧝‍♂️🧞‍♀️🧞‍♂️🧟‍♀️🧟‍♂️🧖‍♀️🧖‍♂️🧗‍♀️🧗‍♂️🧘‍♀️🧘‍♂️🤟🤲🧠🧡🧣🧤🧥🧦🧢🦓🦒🦔🦕🦖🦗🥥🥦🥨🥩🥪🥣🥫🥟🥠🥡🥧🥤🥢🛸🛷🥌🏴󠁧󠁢󠁥󠁮󠁧󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢󠁷󠁬󠁳󠁿⏏️");
-NSString *iOS121Emojis[78] = { @"🥰", @"🥵", @"🥶", @"🥳", @"🥴", @"🥺", @"👨‍🦰", @"👩‍🦰", @"👨‍🦱", @"👩‍🦱", @"👨‍🦲", @"👩‍🦲", @"👨‍🦳", @"👩‍🦳", @"🦸", @"🦸‍♀️", @"🦸‍♂️", @"🦹", @"🦹‍♀️", @"🦹‍♂️", @"🦵", @"🦶", @"🦴", @"🦷", @"🥽", @"🥼", @"🥾", @"🥿", @"🦝", @"🦙", @"🦛", @"🦘", @"🦡", @"🦢", @"🦚", @"🦜", @"🦞", @"🦟", @"🦠", @"🥭", @"🥬", @"🥯", @"🧂", @"🥮", @"🧁", @"🧭", @"🧱", @"🛹", @"🧳", @"🧨", @"🧧", @"🥎", @"🥏", @"🥍", @"🧿", @"🧩", @"🧸", @"♟", @"🧮", @"🧾", @"🧰", @"🧲", @"🧪", @"🧫", @"🧬", @"🧯", @"🧴", @"🧵", @"🧶", @"🧷", @"🧹", @"🧺", @"🧻", @"🧼", @"🧽", @"♾", @"🏴‍☠️", @"🇺🇳" };
+CFStringRef iOS121Emojis = CFSTR("🥰🥵🥶🥳🥴🥺👨‍🦰👩‍🦰👨‍🦱👩‍🦱👨‍🦲👩‍🦲👨‍🦳👩‍🦳🦸🦸‍♀️🦸‍♂️🦹🦹‍♀️🦹‍♂️🦵🦶🦴🦷🥽🥼🥾🥿🦝🦙🦛🦘🦡🦢🦚🦜🦞🦟🦠🥭🥬🥯🧂🥮🧁🧭🧱🛹🧳🧨🧧🥎🥏🥍🧿🧩🧸♟🧮🧾🧰🧲🧪🧫🧬🧯🧴🧵🧶🧷🧹🧺🧻🧼🧽♾🏴‍☠️🇺🇳");
 
 CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
 #define compare(str1, str2) (str1 && CFStringCompare(str1, str2, kCFCompareCaseInsensitive) == kCFCompareEqualTo)
@@ -21,8 +21,7 @@ CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
                 CFCharacterSetRef ourLegacySet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, legacyUncompressedData);
                 CFMutableCharacterSetRef mutableLegacySet = CFCharacterSetCreateMutableCopy(kCFAllocatorDefault, ourLegacySet);
                 CFCharacterSetAddCharactersInString(mutableLegacySet, iOS111Emojis);
-                for (NSString *e : iOS121Emojis)
-                    CFCharacterSetAddCharactersInString(mutableLegacySet, (__bridge CFStringRef)e);
+                CFCharacterSetAddCharactersInString(mutableLegacySet, iOS121Emojis);
                 CFRelease(ourLegacySet);
                 CFRelease(legacyUncompressedData);
                 return mutableLegacySet;
@@ -36,7 +35,7 @@ CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
     CreateCharacterSetForFont = (CFCharacterSetRef (*)(CFStringRef const))MSFindSymbol(ref, "__Z25CreateCharacterSetForFontPK10__CFString");
     XTCopyUncompressedBitmapRepresentation = (CFDataRef (*)(const UInt8 *, CFIndex))MSFindSymbol(ref, "__Z38XTCopyUncompressedBitmapRepresentationPKhm");
     if (XTCopyUncompressedBitmapRepresentation == NULL || CreateCharacterSetForFont == NULL) {
-        HBLogError(@"Fatal: couldn't find necessarry symbol(s)");
+        HBLogError(@"[CharacterSet] Fatal: couldn't find necessarry symbol(s)");
         return;
     }
     %init;

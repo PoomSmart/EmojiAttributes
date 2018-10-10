@@ -200,8 +200,7 @@ static const CFCharacterSetInlineBuffer *__CFStringGetGenderModifierBaseCharacte
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F937, 3)); // SHRUG ~ JUGGLING
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3)); // WRESTLERS ~ HANDBALL
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D6, 10)); // PERSON IN STEAMY ROOM ~ ZOMBIE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B0, 4)); // RED HAIR / CURLY HAIR / BALD / WHITE HAIR
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B9, 1)); // SUPERVILLIAIN
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B8, 2)); // SUPERHERO / SUPERVILLIAIN
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
@@ -285,6 +284,7 @@ static const CFCharacterSetInlineBuffer *__CFStringGetFitzpatrickModifierBaseCha
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1)); // U+1F3CB WEIGHT LIFTER
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B5, 2)); // LEG / FOOT
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B0, 4)); // RED HAIR / CURLY HAIR / BALD / WHITE HAIR
+        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B8, 2)); // SUPERHERO / SUPERVILLAIN
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
