@@ -283,7 +283,6 @@ static const CFCharacterSetInlineBuffer *__CFStringGetFitzpatrickModifierBaseCha
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x26F9, 1)); // U+26F9 PERSON WITH BALL
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1)); // U+1F3CB WEIGHT LIFTER
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B5, 2)); // LEG / FOOT
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B0, 4)); // RED HAIR / CURLY HAIR / BALD / WHITE HAIR
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B8, 2)); // SUPERHERO / SUPERVILLAIN
         CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
