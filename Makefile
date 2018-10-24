@@ -1,4 +1,4 @@
-PACKAGE_VERSION = 1.3.14f
+PACKAGE_VERSION = 1.3.14g
 
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:8.0
@@ -15,7 +15,7 @@ else
 	LIBRARY_NAME = EmojiAttributes
 	EmojiAttributes_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries/EmojiAttributes
 endif
-EmojiAttributes_FILES = TextInputHack.xm CharacterSetHack.xm WebCoreHack.xm CoreFoundationHack.xm # CoreTextHack.xm
+EmojiAttributes_FILES = TextInputHack.xm CharacterSetHack.xm WebCoreHack.xm CoreFoundationHack.xm
 EmojiAttributes_CFLAGS = -std=c++11
 EmojiAttributes_EXTRA_FRAMEWORKS = CydiaSubstrate
 EmojiAttributes_LIBRARIES = icucore
@@ -30,7 +30,7 @@ endif
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 ifeq ($(SIMULATOR),1)
-all::
+setup:: clean all
 	@rm -f /opt/simject/$(TWEAK_NAME).dylib
 	@cp -v $(THEOS_OBJ_DIR)/$(TWEAK_NAME).dylib /opt/simject/$(TWEAK_NAME).dylib
 	@cp -v $(PWD)/EmojiAttributesRun.plist /opt/simject/$(TWEAK_NAME).plist

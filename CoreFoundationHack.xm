@@ -12,7 +12,9 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
 
     character = CFStringGetCharacterFromInlineBuffer(buffer, start);
 
+    // We don't combine characters in Armenian ~ Limbu range for backward deletion
     if ((type != kCFStringBackwardDeletionCluster) || (character < 0x0530) || (character > 0x194F)) {
+        // Check if the current is surrogate
         if (CFUniCharIsSurrogateHighCharacter(character) && CFUniCharIsSurrogateLowCharacter((otherSurrogate = CFStringGetCharacterFromInlineBuffer(buffer, start + 1)))) {
             ++end;
             character = CFUniCharGetLongCharacterForSurrogatePair(character, otherSurrogate);
@@ -21,15 +23,13 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
 
         // Extend backward
         while (start > 0) {
-            if ((type == kCFStringBackwardDeletionCluster) && (character >= 0x0530) && (character < 0x1950))
-                break;
+            if ((type == kCFStringBackwardDeletionCluster) && (character >= 0x0530) && (character < 0x1950)) break;
 
             if (character < 0x10000) { // the first round could be already be non-BMP
                 if (CFUniCharIsSurrogateLowCharacter(character) && CFUniCharIsSurrogateHighCharacter((otherSurrogate = CFStringGetCharacterFromInlineBuffer(buffer, start - 1)))) {
                     character = CFUniCharGetLongCharacterForSurrogatePair(otherSurrogate, character);
                     bitmap = CFUniCharGetBitmapPtrForPlane(csetType, (character >> 16));
-                    if (--start == 0)
-                        break; // starting with non-BMP combining mark
+                    if (--start == 0) break; // starting with non-BMP combining mark
                 } else {
                     bitmap = bmpBitmap;
                 }
@@ -41,19 +41,16 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
                 if (CFUniCharIsSurrogateLowCharacter(baseCharacter) && ((start - 1) > 0)) {
                     UTF16Char otherCharacter = CFStringGetCharacterFromInlineBuffer(buffer, start - 2);
 
-                    if (CFUniCharIsSurrogateHighCharacter(otherCharacter))
-                        baseCharacter = CFUniCharGetLongCharacterForSurrogatePair(otherCharacter, baseCharacter);
+                    if (CFUniCharIsSurrogateHighCharacter(otherCharacter)) baseCharacter = CFUniCharGetLongCharacterForSurrogatePair(otherCharacter, baseCharacter);
                 }
 
-                if (!__CFStringIsBaseForFitzpatrickModifiers(baseCharacter))
-                    break;
+                if (!__CFStringIsBaseForFitzpatrickModifiers(baseCharacter)) break;
             } else {
-                if (!CFUniCharIsMemberOfBitmap(character, bitmap) && (character != 0xFF9E) && (character != 0xFF9F) && ((character & 0x1FFFF0) != 0xF870))
-                    break;
+                if (!CFUniCharIsMemberOfBitmap(character, bitmap) && !__CFStringIsTagSequence(character) && (character != 0xFF9E) && (character != 0xFF9F) && ((character & 0x1FFFF0) != 0xF870)) break;
             }
-
+    
             --start;
-
+    
             character = CFStringGetCharacterFromInlineBuffer(buffer, start);
         }
     }
@@ -77,33 +74,32 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
         // Extend backward
         while (((character = CFStringGetCharacterFromInlineBuffer(buffer, start - 1)) >= HANGUL_CHOSEONG_START) && (character <= HANGUL_SYLLABLE_END) && ((character <= HANGUL_JONGSEONG_END) || (character >= HANGUL_SYLLABLE_START))) {
             switch (state) {
-                case kCFStringHangulStateV:
-                    if (character <= HANGUL_CHOSEONG_END) {
-                        state = kCFStringHangulStateL;
-                    } else if ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END) && !_CFStringIsHangulLVT(character)) {
-                        state = kCFStringHangulStateLV;
-                    } else if (character > HANGUL_JUNGSEONG_END) {
-                        state = kCFStringHangulStateBreak;
-                    }
-                    break;
+            case kCFStringHangulStateV:
+                if (character <= HANGUL_CHOSEONG_END) {
+                    state = kCFStringHangulStateL;
+                } else if ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END) && !_CFStringIsHangulLVT(character)) {
+                    state = kCFStringHangulStateLV;
+                } else if (character > HANGUL_JUNGSEONG_END) {
+                    state = kCFStringHangulStateBreak;
+                }
+                break;
 
-                case kCFStringHangulStateT:
-                    if ((character >= HANGUL_JUNGSEONG_START) && (character <= HANGUL_JUNGSEONG_END)) {
-                        state = kCFStringHangulStateV;
-                    } else if ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END)) {
-                        state = (_CFStringIsHangulLVT(character) ? kCFStringHangulStateLVT : kCFStringHangulStateLV);
-                    } else if (character < HANGUL_JUNGSEONG_START) {
-                        state = kCFStringHangulStateBreak;
-                    }
-                    break;
+            case kCFStringHangulStateT:
+                if ((character >= HANGUL_JUNGSEONG_START) && (character <= HANGUL_JUNGSEONG_END)) {
+                    state = kCFStringHangulStateV;
+                } else if ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END)) {
+                    state = (_CFStringIsHangulLVT(character) ? kCFStringHangulStateLVT : kCFStringHangulStateLV);
+                } else if (character < HANGUL_JUNGSEONG_START) {
+                    state = kCFStringHangulStateBreak;
+                }
+                break;
 
-                default:
-                    state = ((character < HANGUL_JUNGSEONG_START) ? kCFStringHangulStateL : kCFStringHangulStateBreak);
-                    break;
+            default:
+                state = ((character < HANGUL_JUNGSEONG_START) ? kCFStringHangulStateL : kCFStringHangulStateBreak);
+                break;
             }
 
-            if (state == kCFStringHangulStateBreak)
-                break;
+            if (state == kCFStringHangulStateBreak) break;
             --start;
         }
 
@@ -111,35 +107,34 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
         state = initialState;
         while (((character = CFStringGetCharacterFromInlineBuffer(buffer, end)) > 0) && (((character >= HANGUL_CHOSEONG_START) && (character <= HANGUL_JONGSEONG_END)) || ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END)))) {
             switch (state) {
-                case kCFStringHangulStateLV:
-                case kCFStringHangulStateV:
-                    if ((character >= HANGUL_JUNGSEONG_START) && (character <= HANGUL_JONGSEONG_END)) {
-                        state = ((character < HANGUL_JONGSEONG_START) ? kCFStringHangulStateV : kCFStringHangulStateT);
-                    } else {
-                        state = kCFStringHangulStateBreak;
-                    }
-                    break;
+            case kCFStringHangulStateLV:
+            case kCFStringHangulStateV:
+                if ((character >= HANGUL_JUNGSEONG_START) && (character <= HANGUL_JONGSEONG_END)) {
+                    state = ((character < HANGUL_JONGSEONG_START) ? kCFStringHangulStateV : kCFStringHangulStateT);
+                } else {
+                    state = kCFStringHangulStateBreak;
+                }
+                break;
 
-                case kCFStringHangulStateLVT:
-                case kCFStringHangulStateT:
-                    state = (((character >= HANGUL_JONGSEONG_START) && (character <= HANGUL_JONGSEONG_END)) ? kCFStringHangulStateT : kCFStringHangulStateBreak);
-                    break;
+            case kCFStringHangulStateLVT:
+            case kCFStringHangulStateT:
+                state = (((character >= HANGUL_JONGSEONG_START) && (character <= HANGUL_JONGSEONG_END)) ? kCFStringHangulStateT : kCFStringHangulStateBreak);
+                break;
 
-                default:
-                    if (character < HANGUL_JUNGSEONG_START) {
-                        state = kCFStringHangulStateL;
-                    } else if (character < HANGUL_JONGSEONG_START) {
-                        state = kCFStringHangulStateV;
-                    } else if (character >= HANGUL_SYLLABLE_START) {
-                        state = (_CFStringIsHangulLVT(character) ? kCFStringHangulStateLVT : kCFStringHangulStateLV);
-                    } else {
-                        state = kCFStringHangulStateBreak;
-                    }
-                    break;
+            default:
+                if (character < HANGUL_JUNGSEONG_START) {
+                    state = kCFStringHangulStateL;
+                } else if (character < HANGUL_JONGSEONG_START) {
+                    state = kCFStringHangulStateV;
+                } else if (character >= HANGUL_SYLLABLE_START) {
+                    state = (_CFStringIsHangulLVT(character) ? kCFStringHangulStateLVT : kCFStringHangulStateLV);
+                } else {
+                    state = kCFStringHangulStateBreak;
+                }
+                break;
             }
 
-            if (state == kCFStringHangulStateBreak)
-                break;
+            if (state == kCFStringHangulStateBreak) break;
             ++end;
         }
     }
@@ -148,9 +143,8 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
 
     // Extend forward
     while ((character = CFStringGetCharacterFromInlineBuffer(buffer, end)) > 0) {
-        if ((type == kCFStringBackwardDeletionCluster) && (character >= 0x0530) && (character < 0x1950))
-            break;
-
+        if ((type == kCFStringBackwardDeletionCluster) && (character >= 0x0530) && (character < 0x1950)) break;
+    
         if (CFUniCharIsSurrogateHighCharacter(character) && CFUniCharIsSurrogateLowCharacter((otherSurrogate = CFStringGetCharacterFromInlineBuffer(buffer, end + 1)))) {
             character = CFUniCharGetLongCharacterForSurrogatePair(character, otherSurrogate);
             bitmap = CFUniCharGetBitmapPtrForPlane(csetType, (character >> 16));
@@ -160,8 +154,7 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
             step = 1;
         }
 
-        if ((!prevIsFitzpatrickBase || !__CFStringIsFitzpatrickModifiers(character)) && !CFUniCharIsMemberOfBitmap(character, bitmap) && (character != 0xFF9E) && (character != 0xFF9F) && ((character & 0x1FFFF0) != 0xF870))
-            break;
+        if ((!prevIsFitzpatrickBase || !__CFStringIsFitzpatrickModifiers(character)) && !CFUniCharIsMemberOfBitmap(character, bitmap) && !__CFStringIsTagSequence(character) && (character != 0xFF9E) && (character != 0xFF9F) && ((character & 0x1FFFF0) != 0xF870)) break;
 
         prevIsFitzpatrickBase = __CFStringIsBaseForFitzpatrickModifiers(character);
 
@@ -190,7 +183,7 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
 
     /* Fast case.  If we're eight-bit, it's either the default encoding is cheap or the content is all ASCII.  Watch out when (or if) adding more 8bit Mac-scripts in CFStringEncodingConverters
     */
-    if (!CF_IS_OBJC(__kCFStringTypeID, string) && !CF_IS_SWIFT(__kCFStringTypeID, string) && __CFStrIsEightBit(string)) return CFRangeMake(charIndex, 1);
+    if (!CF_IS_OBJC(_kCFRuntimeIDCFString, string) && !CF_IS_SWIFT(_kCFRuntimeIDCFString, string) && __CFStrIsEightBit(string)) return CFRangeMake(charIndex, 1);
 
     bmpBitmap = CFUniCharGetBitmapPtrForPlane(csetType, 0);
     letterBMP = CFUniCharGetBitmapPtrForPlane(kCFUniCharLetterCharacterSet, 0);

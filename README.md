@@ -18,12 +18,8 @@ This tweak may be categorized into:
 * [Active] CF-based emoji display (CoreFoundationHack)
 * [Active] Web-based emoji display (WebCoreHack)
 * [Active] TextInput character set addition (TextInputHack)
-* [WIP] CoreText-based character set addition (CoreTextHack)
-* [Awaiting] ICU-based emoji display (ICUHack)
-* [Awaiting] MIME (MIMEHack)
 
 The first part is already described above. For CoreFoundation hack, the algorithm mimics emoji support from open-source of latest CoreFoundation framework
 found on the internet. For WebCore hack, the algorithm aims to fix emoji
 display on websites (which is different from display of iOS system itself) by implementing the whole modern code from open-source WebKit (WebCore here) framework.
 Character set addition also takes place in `TextInput.framework`, as presented in TextInputHack. Using the up-to-date bitmap is always good when a tweak developer checks whether a string contains emoji via `-[NSString(TIExtras) _containsEmoji]`.
-ICUHack is similar to WebCoreHack, but it mainly focuses on ICU-related stuff. New emojis data is spotted there but apparently not used at this time. Anyway, it's always better to keep until it comes into play.

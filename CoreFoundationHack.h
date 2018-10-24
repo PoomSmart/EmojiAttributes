@@ -453,6 +453,7 @@ static inline bool __CFStringIsBaseForFitzpatrickModifiers(UTF32Char character) 
         return (CFCharacterSetInlineBufferIsLongCharacterMember(__CFStringGetFitzpatrickModifierBaseCharacterSet(), character) ? true : false);
     return false;
 }
+static inline bool __CFStringIsTagSequence(UTF32Char character) { return ((character >= 0xE0020) && (character <= 0xE007F) ? true : false); }
 
 #define MAX_CASE_MAPPING_BUF (8)
 #define ZERO_WIDTH_JOINER (0x200D)
