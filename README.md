@@ -1,25 +1,27 @@
-EmojiAttributes
-=============
+# EmojiAttributes
 
 Fixing emoji display bugs for all capable iOS versions.
 
-Description
-=============
-
-Function (Character set): Emoji character set has to be modified in order to display emoji correctly. Having the up-to-date emoji font installed on your device is not enough, as iOS recognizes and displays emojis based on character set known by it. For an analogy, the character set consists of tickets of all emojis (emoji characters) allowed to be displayed. If a ticket isn't found for an emoji, that emoji won't display properly, instead as "?", "..." or blank space. EmojiAttributes makes sure there is a ticket for everyone.
-
-Function (Combined characters): Some emojis are made of multiple characters. This has been a thing since iOS 8.3 when Apple introduced family, couple emojis and also skinned emojis. Apple used to treat emoji as one single character (or, one character followed by just a variant selector character: 0xFE0F). Therefore, if the code (in EmojiAttributes) that handles grouped emojis doesn't present, iOS would break them into separate emojis, and not combined as a single unit as it should. Also, being able to see them as one unit means you can delete the whole emoji at once.
-
-Technical Information
-=============
+# Technical Information
 
 This tweak may be categorized into:
-* [Active] Character set addition (CharacterSetHack)
-* [Active] CF-based emoji display (CoreFoundationHack)
-* [Active] Web-based emoji display (WebCoreHack)
-* [Active] TextInput character set addition (TextInputHack)
+* [Active] **CoreText**-based emoji display (CoreTextHack)
+* [Active] **CoreFoundation**-based emoji display (CoreFoundationHack)
+* [Active] **WebCore**-based emoji display (WebCoreHack)
+* [Active] **TextInput** character set addition (TextInputHack)
 
-The first part is already described above. For CoreFoundation hack, the algorithm mimics emoji support from open-source of latest CoreFoundation framework
-found on the internet. For WebCore hack, the algorithm aims to fix emoji
-display on websites (which is different from display of iOS system itself) by implementing the whole modern code from open-source WebKit (WebCore here) framework.
-Character set addition also takes place in `TextInput.framework`, as presented in TextInputHack. Using the up-to-date bitmap is always good when a tweak developer checks whether a string contains emoji via `-[NSString(TIExtras) _containsEmoji]`.
+## CoreText
+### Character Set Addition
+Character set for the emoji font is hard-coded according to how this framework works; `CreateCharacterSetForFont()`, instead of parsing all that are needed from the font itself. The character set is in bitmap format and it is vital to redefine with our up-to-date bitmap.
+
+### Emoji Presentation Addition
+As of iOS 11, a weird C++ function `IsDefaultEmojiPresentation()` seems to determine which emojis are really supported in the system before showing them. While it is unknown where exactly does this function matters, hooking this function may be good for the future.
+
+## CoreFoundation
+This framework handles display emojis in most native applications. `CFStringGetRangeOfCharacterClusterAtIndex()` plays the important role for emojis as it has to consult the emoji characterset - that should be up-to-date. If getting the range of emojis in a given string is invalid because the characterset is old, it can result in some emojis not grouping properly, or getting fallback to the "?" icon.
+
+## WebCore
+Tons of logic in displaying emojis in websites or web views are in here. They hard-coded all emoji unicodes in order to tell which character that WebCore is parsing is an emoji, so that the emoji font can be applied to.
+
+## TextInput (iOS < 10)
+`-[NSString(TIExtras) _containsEmoji]` involves opening the emoji bitmap file `TIUserDictionaryEmojiCharacterSet.bitmap` residing in `/System/Library/Frameworks/TextInput.framework`. It simply needs to be replaced by the most recent bitmap.
