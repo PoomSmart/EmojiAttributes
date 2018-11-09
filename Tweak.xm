@@ -4,6 +4,6 @@
 #import "../PS.h"
 
 %ctor {
-    if (_isTarget(TargetTypeGUINoExtension, @[@"com.apple.mobilesms.compose", @"com.apple.MobileSMS.MessagesNotificationExtension", @"com.apple.WebKit.WebContent"]))
+    if (_isTarget(TargetTypeApps | TargetTypeGenericExtensions, @[@"com.apple.WebKit.WebContent"]))
         dlopen("/Library/MobileSubstrate/DynamicLibraries/EmojiAttributes/EmojiAttributes.dylib", RTLD_LAZY);
 }
