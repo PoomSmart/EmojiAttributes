@@ -1,9 +1,10 @@
 Package: com.ps.emojiattributes
 Name: EmojiAttributes
 Depends: mobilesubstrate
+Conflicts: com.ps.flexmoji
 Version: 1.0.0
 Architecture: iphoneos-arm
-Description: Fix Emoji Attributes.
+Description: Various under-the-hood fixes for emoji display.
 Maintainer: PoomSmart
 Author: PoomSmart
 Section: Tweaks

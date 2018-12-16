@@ -1,14 +1,15 @@
 # EmojiAttributes
 
-Fixing emoji display bugs for all capable iOS versions.
+Various under-the-hood fixes for emoji display.
 
 # Technical Information
 
 This tweak may be categorized into:
-* [Active] **CoreText**-based emoji display (CoreTextHack)
-* [Active] **CoreFoundation**-based emoji display (CoreFoundationHack)
-* [Active] **WebCore**-based emoji display (WebCoreHack)
-* [Active] **TextInput** character set addition (TextInputHack)
+* **CoreText**-based emoji display (CoreTextHack)
+* **CoreFoundation**-based emoji display (CoreFoundationHack)
+* **WebCore**-based emoji display (WebCoreHack)
+* **TextInput** character set addition (TextInputHack)
+* **EmojiSize** (EmojiSizeFix)
 
 ## CoreText
 ### Character Set Addition
@@ -25,3 +26,6 @@ Tons of logic in displaying emojis in websites or web views are in here. They ha
 
 ## TextInput (iOS < 10)
 `-[NSString(TIExtras) _containsEmoji]` involves opening the emoji bitmap file `TIUserDictionaryEmojiCharacterSet.bitmap` residing in `/System/Library/Frameworks/TextInput.framework`. It simply needs to be replaced by the most recent bitmap.
+
+## Emoji Size Fix (iOS 6 - 9)
+Remove WebCore/CoreText emoji size restriction. See [here](https://emojier.com/faq/15122z-ios-small-font-size-emoji-hell).
