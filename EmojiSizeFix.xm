@@ -2,20 +2,22 @@
 #import "WebCoreSupport/CoreGraphicsSPI.h"
 #import <CoreText/CoreText.h>
 
+double iOSVer = 0;
+
 BOOL (*CTFontIsAppleColorEmoji)(CTFontRef);
 extern "C" bool CGFontGetGlyphAdvancesForStyle(CGFontRef, CGAffineTransform *, CGFontRenderingStyle, const CGGlyph *, size_t, CGSize *);
 
 bool *findIsEmoji(void *arg0) {
 #if __LP64__
-    if (isiOS9Up)
+    if (iOSVer >= 9.0)
         return (bool *)((uint8_t *)arg0 + 0x2B);
-    else if (isiOS7Up)
+    else if (iOSVer >= 7.0)
         return (bool *)((uint8_t *)arg0 + 0x8);
     return (bool *)((uint8_t *)arg0 + 0xC);
 #else
-    if (isiOS9Up)
+    if (iOSVer >= 9.0)
         return (bool *)((uint8_t *)arg0 + 0x1F);
-    else if (isiOS7Up)
+    else if (iOSVer >= 6.1)
         return (bool *)((uint8_t *)arg0 + 0x8);
     return (bool *)((uint8_t *)arg0 + 0xC);
 #endif
@@ -31,14 +33,31 @@ CTFontRef (*FontPlatformData_ctFont)(void *);
     return font;
 }
 
+%group iOS60
+
+void (*platformInit)(void *);
+%hookf(void, platformInit, void *arg0) {
+    bool *isEmoji = (bool *)((uint8_t *)arg0 + 0x34);
+    bool forEmoji = *isEmoji;
+    *isEmoji = NO;
+    %orig;
+    *isEmoji = forEmoji;
+}
+
+%end
+
 %group iOS6
 
 float (*platformWidthForGlyph)(void *, CGGlyph);
 %hookf(float, platformWidthForGlyph, void *arg0, CGGlyph code) {
-    CTFontRef font = isiOS7Up ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
+    CTFontRef font = iOSVer >= 7.0 ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
     if (((CTFontIsAppleColorEmoji && CTFontIsAppleColorEmoji(font)) || (CFEqual(CFBridgingRelease(CTFontCopyPostScriptName(font)), CFSTR("AppleColorEmoji"))))) {
         CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderingStyleSubpixelPositioning | kCGFontRenderingStyleSubpixelQuantization | kCGFontAntialiasingStyleUnfiltered;
-        CGFloat pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x38);
+        CGFloat pointSize = iOSVer >= 6.1 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34);
+        if (pointSize == 0 && iOSVer != 6.0)
+            pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x34);
+        if (iOSVer == 6.0)
+            pointSize = *(CGFloat *)((uint8_t *)arg0 + 0xE);
         CGSize advance = CGSizeZero;
         CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
         CGFontRef cgFont = CTFontCopyGraphicsFont(font, NULL);
@@ -54,6 +73,14 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
 
 %ctor {
     if (!isiOS10Up && isiOS6Up) {
+        if (isiOS9Up)
+            iOSVer = 9.0;
+        else if (isiOS7Up)
+            iOSVer = 7.0;
+        else if (isiOS61Up)
+            iOSVer = 6.1;
+        else
+            iOSVer = 6.0;
         MSImageRef ctref = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
         MSImageRef wcref = MSGetImageByName(realPath2(@"/System/Library/PrivateFrameworks/WebCore.framework/WebCore"));
         CTFontIsAppleColorEmoji = (BOOL (*)(CTFontRef))MSFindSymbol(ctref, "_CTFontIsAppleColorEmoji");
@@ -61,11 +88,16 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         platformWidthForGlyph = (float (*)(void *, CGGlyph))MSFindSymbol(wcref, "__ZNK7WebCore4Font21platformWidthForGlyphEt");
         if (platformWidthForGlyph == NULL)
             platformWidthForGlyph = (float (*)(void *, CGGlyph))MSFindSymbol(wcref, "__ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt");
+        platformInit = (void (*)(void *))MSFindSymbol(wcref, "__ZN7WebCore14SimpleFontData12platformInitEv");
         HBLogDebug(@"Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
         HBLogDebug(@"Found platformWidthForGlyph: %d", platformWidthForGlyph != NULL);
+        HBLogDebug(@"Found platformInit: %d", platformInit != NULL);;
         %init;
-        if (!isiOS7Up) {
+        if (iOSVer < 7.0) {
             %init(iOS6);
+            if (iOSVer == 6.0) {
+                %init(iOS60);
+            }
         }
     }
 }

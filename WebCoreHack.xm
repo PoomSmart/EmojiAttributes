@@ -501,7 +501,7 @@ bool (*advanceByCombiningCharacterSequence)(const UChar *&, const UChar *, UChar
         characterRangeCodePath = (WebCore::FontCascade::CodePath (*)(const UChar *, unsigned))MSFindSymbol(ref, "__ZN7WebCore4Font22characterRangeCodePathEPKtj");
     HBLogDebug(@"[WebCoreHack] Found characterRangeCodePath: %d", characterRangeCodePath != NULL);
 #if __LP64__ || !TARGET_OS_SIMULATOR
-    advanceByCombiningCharacterSequence = (bool (*)(const UChar *&, const UChar *, UChar32&, unsigned&))MSFindSymbol(ref, "__ZN7WebCoreL35advanceByCombiningCharacterSequenceERPKtS1_RiRj"); // missing in iOS 5
+    advanceByCombiningCharacterSequence = (bool (*)(const UChar *&, const UChar *, UChar32&, unsigned&))MSFindSymbol(ref, "__ZN7WebCoreL35advanceByCombiningCharacterSequenceERPKtS1_RiRj"); // missing in iOS 5-6
     HBLogDebug(@"[WebCoreHack] Found advanceByCombiningCharacterSequence: %d", advanceByCombiningCharacterSequence != NULL);
 #endif
     %init;
