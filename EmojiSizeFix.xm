@@ -53,9 +53,9 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
     CTFontRef font = iOSVer >= 7.0 ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
     if (((CTFontIsAppleColorEmoji && CTFontIsAppleColorEmoji(font)) || (CFEqual(CFBridgingRelease(CTFontCopyPostScriptName(font)), CFSTR("AppleColorEmoji"))))) {
         CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderingStyleSubpixelPositioning | kCGFontRenderingStyleSubpixelQuantization | kCGFontAntialiasingStyleUnfiltered;
-        CGFloat pointSize = iOSVer >= 6.1 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34);
+        CGFloat pointSize = iOSVer >= 6.1 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34); // 6.1.6 vs lower
         if (pointSize == 0 && iOSVer != 6.0)
-            pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x34);
+            pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x34); // <= 6.1.5
         if (iOSVer == 6.0)
             pointSize = *(CGFloat *)((uint8_t *)arg0 + 0xE);
         CGSize advance = CGSizeZero;

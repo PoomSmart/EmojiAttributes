@@ -4,28 +4,23 @@ Various under-the-hood fixes for emoji display.
 
 # Technical Information
 
-This tweak may be categorized into:
-* **CoreText**-based emoji display (CoreTextHack)
-* **CoreFoundation**-based emoji display (CoreFoundationHack)
-* **WebCore**-based emoji display (WebCoreHack)
-* **TextInput** character set addition (TextInputHack)
-* **EmojiSize** (EmojiSizeFix)
-
 ## CoreText
+This framework is an intermediate layer between text display and text representation in iOS. It mainly handles character sets of such supported fonts, including emoji.
+
 ### Character Set Addition
-Character set for the emoji font is hard-coded according to how this framework works; `CreateCharacterSetForFont()`, instead of parsing all that are needed from the font itself. The character set is in bitmap format and it is vital to redefine with our up-to-date bitmap.
+Emoji character set for display is hard-coded in bitmap format and retrievable from `CreateCharacterSetForFont()`. The set changes from version to version of iOS. We need to override this with the latest character set. To get the character set needed, we can dump one from `libGSFontCache.dylib` which is what [EmojiCategory](https://github.com/PoomSmart/EmojiCategory) does. Wtihout this override, emojis can be all shadowed (black out).
 
 ### Emoji Presentation Addition
-As of iOS 11, a weird C++ function `IsDefaultEmojiPresentation()` seems to determine which emojis are really supported in the system before showing them. While it is unknown where exactly does this function matters, hooking this function may be good for the future.
+As of iOS 11, a weird function `IsDefaultEmojiPresentation()` seems to determine which emojis are really supported by the system before showing them. While it is unknown where exactly does this function matters, hooking this function may be good for the future. The representation is just an array of strings and we can accumulate every single emoji and override it with that.
 
 ## CoreFoundation
-This framework handles display emojis in most native applications. `CFStringGetRangeOfCharacterClusterAtIndex()` plays the important role for emojis as it has to consult the emoji characterset - that should be up-to-date. If getting the range of emojis in a given string is invalid because the characterset is old, it can result in some emojis not grouping properly, or getting fallback to the "?" icon.
+This framework handles display emojis in most native (UIKit) applications. `CFStringGetRangeOfCharacterClusterAtIndex()` consults the hardcoded emoji character set to determine the index of the given character, taking into account that it can be one of the characters (cluster) of one single emoji. We as well need to override the character set. Without this workaround, unsupported emojis will be rendered as blank or "?" icon.
 
 ## WebCore
-Tons of logic in displaying emojis in websites or web views are in here. They hard-coded all emoji unicodes in order to tell which character that WebCore is parsing is an emoji, so that the emoji font can be applied to.
+This framework does a lot of things to displaying content in websites, including displaying emojis in such web pages. Apple hardcoded all emoji unicodes in here for iteration through characters in a webpage to apply a compatible (emoji) font for them. Without this hack, emojis will be displayed as blank rectangles.
 
 ## TextInput (iOS < 10)
-`-[NSString(TIExtras) _containsEmoji]` involves opening the emoji bitmap file `TIUserDictionaryEmojiCharacterSet.bitmap` residing in `/System/Library/Frameworks/TextInput.framework`. It simply needs to be replaced by the most recent bitmap.
+`-[NSString(TIExtras) _containsEmoji]` involves opening the emoji bitmap file `TIUserDictionaryEmojiCharacterSet.bitmap` residing in `/System/Library/Frameworks/TextInput.framework`. It simply needs to be replaced by the most recent bitmap so that such applications that perform checking emoji substrings will perform correctly.
 
 ## Emoji Size Fix (iOS 6 - 9)
 Remove WebCore/CoreText emoji size restriction. See [here](https://emojier.com/faq/15122z-ios-small-font-size-emoji-hell).
