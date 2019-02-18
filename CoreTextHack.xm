@@ -1,6 +1,9 @@
 #import "../PS.h"
 #import "CharacterSet.h"
 #import "EmojiPresentation.h"
+#import <substrate.h>
+
+%config(generator=MobileSubstrate)
 
 %group CharacterSet
 
@@ -77,7 +80,7 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
         if (IsDefaultEmojiPresentation == NULL || DefaultEmojiPresentationSet == NULL)
             HBLogError(@"[CoreTextHack: EmojiPresentation] Fatal: couldn't find necessarry symbol(s)");
         else {
-            %init(EmojiPresentation)
+            %init(EmojiPresentation);
         }
     }
 }

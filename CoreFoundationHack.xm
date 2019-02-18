@@ -3,6 +3,8 @@
 #import "CoreFoundationHack.h"
 #import <substrate.h>
 
+%config(generator=MobileSubstrate)
+
 static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffer, CFIndex start, CFStringCharacterClusterType type, const uint8_t *bmpBitmap, CFIndex csetType){
     CFIndex end = start + 1;
     const uint8_t *bitmap = bmpBitmap;

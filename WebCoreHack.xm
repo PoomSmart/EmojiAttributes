@@ -6,6 +6,9 @@
 #import "WebCoreSupport/CoreGraphicsSPI.h"
 #include <unicode/utf16.h>
 #import <CoreText/CoreText.h>
+#import <substrate.h>
+
+%config(generator=MobileSubstrate)
 
 using namespace WebCore;
 using namespace WTF;

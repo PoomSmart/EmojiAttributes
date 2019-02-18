@@ -1,6 +1,9 @@
 #import "../PS.h"
 #import "WebCoreSupport/CoreGraphicsSPI.h"
 #import <CoreText/CoreText.h>
+#import <substrate.h>
+
+%config(generator=MobileSubstrate)
 
 double iOSVer = 0;
 
