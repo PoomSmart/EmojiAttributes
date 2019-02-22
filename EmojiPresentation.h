@@ -1,3 +1,5 @@
+// EmojiCategory > -printEmojiUset:UCHAR_EMOJI_PRESENTATION
+// http://www.unicode.org/reports/tr51/#def_emoji_presentation
 NSString *emojiPresentation[] = {
     @"⌚", @"⌛", @"⏩", @"⏪", @"⏫", @"⏬", @"⏰", @"⏳", @"◽", @"◾",
     @"☔", @"☕", @"♈", @"♉", @"♊", @"♋", @"♌", @"♍", @"♎", @"♏",
