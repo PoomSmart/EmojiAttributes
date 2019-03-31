@@ -18,7 +18,7 @@ static NSData *dataFromHexString(NSString *string) {
     NSUInteger length = string.length;
     while (i < length - 1) {
         char c = [string characterAtIndex:i++];
-        if (c < '0' || (c > '9' && c < 'a') || c > 'f')
+        if (c == ' ')
             continue;
         byte_chars[0] = c;
         byte_chars[1] = [string characterAtIndex:i++];
@@ -74,8 +74,10 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
     else {
         %init(CharacterSet);
     }
-    if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_0)) {
+    if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
         IsDefaultEmojiPresentation = (void (*)(void *))MSFindSymbol(ref, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
+        if (IsDefaultEmojiPresentation == NULL)
+            IsDefaultEmojiPresentation = (void (*)(void *))MSFindSymbol(ref, "__ZZL26IsDefaultEmojiPresentationjEN4$_128__invokeEPv");
         DefaultEmojiPresentationSet = (CFMutableCharacterSetRef (*))MSFindSymbol(ref, "__ZZL26IsDefaultEmojiPresentationjE28sDefaultEmojiPresentationSet");
         if (IsDefaultEmojiPresentation == NULL || DefaultEmojiPresentationSet == NULL)
             HBLogError(@"[CoreTextHack: EmojiPresentation] Fatal: couldn't find necessarry symbol(s)");

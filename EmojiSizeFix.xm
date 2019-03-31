@@ -75,7 +75,7 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
 %end
 
 %ctor {
-    if (!isiOS10Up && isiOS6Up) {
+    if (IS_IOS_BETWEEN_EEX(iOS_6_0, iOS_10_0)) {
         if (isiOS9Up)
             iOSVer = 9.0;
         else if (isiOS7Up)

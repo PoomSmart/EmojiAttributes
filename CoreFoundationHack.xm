@@ -499,5 +499,7 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
 }
 
 %ctor {
+    if (isiOS12_1Up)
+        return;
     %init;
 }
