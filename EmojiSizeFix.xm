@@ -61,7 +61,7 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
             pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x34); // <= 6.1.5
         if (iOSVer == 6.0)
             pointSize = *(CGFloat *)((uint8_t *)arg0 + 0xE);
-        CGSize advance = CGSizeZero;
+        CGSize advance = CGSizeMake(0, 0);
         CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
         CGFontRef cgFont = CTFontCopyGraphicsFont(font, NULL);
         if (!CGFontGetGlyphAdvancesForStyle(cgFont, &m, style, &code, 1, &advance))
