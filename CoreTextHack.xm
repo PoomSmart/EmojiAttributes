@@ -67,18 +67,18 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
 
 %ctor {
     MSImageRef ref = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
-    CreateCharacterSetForFont = (CFCharacterSetRef (*)(CFStringRef const))MSFindSymbol(ref, "__Z25CreateCharacterSetForFontPK10__CFString");
-    XTCopyUncompressedBitmapRepresentation = (CFDataRef (*)(const UInt8 *, CFIndex))MSFindSymbol(ref, "__Z38XTCopyUncompressedBitmapRepresentationPKhm");
+    CreateCharacterSetForFont = (CFCharacterSetRef (*)(CFStringRef const))PSFindSymbolCallable(ref, "__Z25CreateCharacterSetForFontPK10__CFString");
+    XTCopyUncompressedBitmapRepresentation = (CFDataRef (*)(const UInt8 *, CFIndex))PSFindSymbolCallable(ref, "__Z38XTCopyUncompressedBitmapRepresentationPKhm");
     if (XTCopyUncompressedBitmapRepresentation == NULL || CreateCharacterSetForFont == NULL) {
         HBLogError(@"[CoreTextHack: CharacterSet] Fatal: couldn't find necessarry symbol(s)");
         return;
     }
     %init(CharacterSet);
     if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
-        IsDefaultEmojiPresentation = (void (*)(void *))MSFindSymbol(ref, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
+        IsDefaultEmojiPresentation = (void (*)(void *))PSFindSymbolCallable(ref, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
         if (IsDefaultEmojiPresentation == NULL)
-            IsDefaultEmojiPresentation = (void (*)(void *))MSFindSymbol(ref, "__ZZL26IsDefaultEmojiPresentationjEN4$_128__invokeEPv");
-        DefaultEmojiPresentationSet = (CFMutableCharacterSetRef (*))MSFindSymbol(ref, "__ZZL26IsDefaultEmojiPresentationjE28sDefaultEmojiPresentationSet");
+            IsDefaultEmojiPresentation = (void (*)(void *))PSFindSymbolCallable(ref, "__ZZL26IsDefaultEmojiPresentationjEN4$_128__invokeEPv");
+        DefaultEmojiPresentationSet = (CFMutableCharacterSetRef (*))PSFindSymbolReadable(ref, "__ZZL26IsDefaultEmojiPresentationjE28sDefaultEmojiPresentationSet");
         if (IsDefaultEmojiPresentation == NULL || DefaultEmojiPresentationSet == NULL) {
             HBLogError(@"[CoreTextHack: EmojiPresentation] Fatal: couldn't find necessarry symbol(s)");
             return;
