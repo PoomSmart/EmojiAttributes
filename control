@@ -1,6 +1,6 @@
 Package: com.ps.emojiattributes
 Name: EmojiAttributes
-Depends: mobilesubstrate
+Depends: mobilesubstrate, com.ps.libsubstitrate
 Conflicts: com.ps.flexmoji
 Version: 1.0.0
 Architecture: iphoneos-arm
@@ -9,3 +9,4 @@ Maintainer: PoomSmart
 Author: PoomSmart
 Section: Tweaks
 Depiction: https://poomsmart.github.io/repo/depictions/emojiattributes.html
+SileoDepiction: https://poomsmart.github.io/repo/sileodepictions/emojiattributes.json
