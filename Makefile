@@ -18,7 +18,9 @@ endif
 EmojiAttributes_FILES = TextInputHack.xm CoreTextHack.xm WebCoreHack.xm CoreFoundationHack.xm EmojiSizeFix.xm
 EmojiAttributes_CFLAGS = -std=c++11
 EmojiAttributes_EXTRA_FRAMEWORKS = CydiaSubstrate
+ifneq ($(SIMULATOR),1)
 EmojiAttributes_LIBRARIES = Substitrate
+endif
 EmojiAttributes_USE_SUBSTRATE = 1
 
 ifneq ($(SIMULATOR),1)
