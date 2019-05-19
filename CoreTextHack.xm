@@ -53,10 +53,13 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 
 %end
 
+#if __LP64__
+
 %group EmojiPresentation
 
 void (*IsDefaultEmojiPresentation)(void *);
 CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
+
 %hookf(void, IsDefaultEmojiPresentation, void *arg0) {
     *DefaultEmojiPresentationSet = CFCharacterSetCreateMutable(kCFAllocatorDefault);
     for (NSString *emoji : emojiPresentation)
@@ -65,6 +68,8 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
 }
 
 %end
+
+#endif
 
 %ctor {
     const char *ct = realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText");
@@ -75,6 +80,7 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
         return;
     }
     %init(CharacterSet);
+#if __LP64__
     if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
         IsDefaultEmojiPresentation = (void (*)(void *))PSFindSymbolCallableCompat(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
         if (IsDefaultEmojiPresentation == NULL)
@@ -86,4 +92,5 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
         }
         %init(EmojiPresentation);
     }
+#endif
 }

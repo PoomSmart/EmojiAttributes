@@ -10,6 +10,8 @@
 
 %config(generator=MobileSubstrate)
 
+#if !__arm64e__
+
 using namespace WebCore;
 using namespace WTF;
 
@@ -511,3 +513,5 @@ bool (*advanceByCombiningCharacterSequence)(const UChar *&, const UChar *, UChar
 #endif
     %init;
 }
+
+#endif

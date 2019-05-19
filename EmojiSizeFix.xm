@@ -5,6 +5,8 @@
 
 %config(generator=MobileSubstrate)
 
+#if !__arm64e__
+
 double iOSVer = 0;
 
 BOOL (*CTFontIsAppleColorEmoji)(CTFontRef);
@@ -104,3 +106,5 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         }
     }
 }
+
+#endif

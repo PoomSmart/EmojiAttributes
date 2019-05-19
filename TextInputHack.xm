@@ -1,6 +1,8 @@
 #import "../PS.h"
 #import <dlfcn.h>
 
+#if !__arm64e__
+
 %hook NSBundle
 
 - (NSString *)pathForResource:(NSString *)resourceName ofType:(NSString *)resourceType {
@@ -17,3 +19,5 @@
     dlopen(realPath2(@"/System/Library/PrivateFrameworks/TextInput.framework/TextInput"), RTLD_LAZY);
     %init;
 }
+
+#endif

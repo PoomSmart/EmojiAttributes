@@ -1,5 +1,3 @@
-#include <algorithm>
-
 namespace WTF {
 
     template <typename T> class PassRefPtr;
