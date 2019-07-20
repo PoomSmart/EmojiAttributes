@@ -3,7 +3,6 @@
 #include <objc/objc.h>
 #import "RefPtr.h"
 #import "RefCounted.h"
-#import "Assert.h"
 
 typedef unsigned char LChar;
 
@@ -42,12 +41,12 @@ namespace WTF {
 	class StringImpl : public StringImplBase {
 	public:
 		CFStringRef createCFString();
-		UChar operator[](unsigned i) { ASSERT(i < m_length); return m_data[i]; }
+		UChar operator[](unsigned i) { return m_data[i]; }
 		//operator NSString*();
 		const UChar* characters() const { return m_data; }
 		bool is8Bit() const { return m_hashAndFlags & s_hashFlag8BitBuffer; }
-		const LChar* characters8() const { ASSERT(is8Bit()); return m_data8; }
-		const UChar* characters16() const { ASSERT(!is8Bit()); return m_data16; }
+		const LChar* characters8() const { return m_data8; }
+		const UChar* characters16() const { return m_data16; }
 		void deref() { m_refCountAndFlags -= s_refCountIncrement; if (!(m_refCountAndFlags & (s_refCountMask | s_refCountFlagStatic))) delete this; }
 		unsigned length() const { return m_length; }
 	private:
@@ -84,14 +83,12 @@ bool isPointerTypeAlignmentOkay(Type* ptr)
 template<typename TypePtr>
 TypePtr reinterpret_cast_ptr(void* ptr)
 {
-    ASSERT(isPointerTypeAlignmentOkay(reinterpret_cast<TypePtr>(ptr)));
     return reinterpret_cast<TypePtr>(ptr);
 }
 
 template<typename TypePtr>
 TypePtr reinterpret_cast_ptr(const void* ptr)
 {
-    ASSERT(isPointerTypeAlignmentOkay(reinterpret_cast<TypePtr>(ptr)));
     return reinterpret_cast<TypePtr>(ptr);
 }
 
@@ -143,13 +140,11 @@ namespace WTF {
 		const LChar* characters8() const {
 			if (!m_impl)
 				return 0;
-			ASSERT(m_impl->is8Bit());
 			return m_impl->characters8();
 		}
 		const UChar* characters16() const {
 			if (!m_impl)
 				return 0;
-			ASSERT(!m_impl->is8Bit());
 			return m_impl->characters16();
 		}
     	const UChar* characters() const {
@@ -256,7 +251,6 @@ namespace WTF {
 			const UChar* m_characters;
 	};
 	inline const UChar* StringView::characters16() const {
-		ASSERT(!is8Bit());
 		return static_cast<const UChar*>(m_characters);
 	}
 	inline StringView::UpconvertedCharacters StringView::upconvertedCharacters() const {
