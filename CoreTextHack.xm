@@ -1,8 +1,11 @@
 #import "../PS.h"
 #import "CharacterSet.h"
+#import "EmojiCharacterSet.h"
 #import "EmojiPresentation.h"
 #import "../libsubstitrate/substitrate.h"
 #import <substrate.h>
+
+typedef int32_t UChar32;
 
 %config(generator=MobileSubstrate)
 
@@ -55,16 +58,24 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 
 #if __LP64__
 
+static CFMutableCharacterSetRef theSet = NULL;
+
 %group EmojiPresentation
 
 void (*IsDefaultEmojiPresentation)(void *);
 CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
 
 %hookf(void, IsDefaultEmojiPresentation, void *arg0) {
-    *DefaultEmojiPresentationSet = CFCharacterSetCreateMutable(kCFAllocatorDefault);
-    for (NSString *emoji : emojiPresentation)
-        CFCharacterSetAddCharactersInString(*DefaultEmojiPresentationSet, (__bridge CFStringRef)emoji);
-    *DefaultEmojiPresentationSet = (CFMutableCharacterSetRef)CFRetain(*DefaultEmojiPresentationSet);
+    *DefaultEmojiPresentationSet = theSet;
+}
+
+%end
+
+%group EmojiPresentationUSet
+
+bool (*IsDefaultEmojiPresentationUSet)(UChar32);
+%hookf(bool, IsDefaultEmojiPresentationUSet, UChar32 c) {
+    return CFCharacterSetIsCharacterMember(theSet, c);
 }
 
 %end
@@ -81,16 +92,27 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
     }
     %init(CharacterSet);
 #if __LP64__
+    theSet = CFCharacterSetCreateMutable(kCFAllocatorDefault);
+    for (NSString *emoji : emojiPresentation)
+        CFCharacterSetAddCharactersInString(theSet, (__bridge CFStringRef)emoji);
+    CFRetain(theSet);
     if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
         IsDefaultEmojiPresentation = (void (*)(void *))PSFindSymbolCallableCompat(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
         if (IsDefaultEmojiPresentation == NULL)
             IsDefaultEmojiPresentation = (void (*)(void *))PSFindSymbolCallableCompat(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_128__invokeEPv");
         DefaultEmojiPresentationSet = (CFMutableCharacterSetRef (*))PSFindSymbolReadableCompat(ct, "__ZZL26IsDefaultEmojiPresentationjE28sDefaultEmojiPresentationSet");
         if (IsDefaultEmojiPresentation == NULL || DefaultEmojiPresentationSet == NULL) {
-            HBLogError(@"[CoreTextHack: EmojiPresentation] Fatal: couldn't find necessarry symbol(s)");
+            HBLogError(@"[CoreTextHack: EmojiPresentation] Fatal: couldn't find IsDefaultEmojiPresentation and/or DefaultEmojiPresentationSet");
             return;
         }
         %init(EmojiPresentation);
+    } else if (isiOS12_2Up) {
+        IsDefaultEmojiPresentationUSet = (bool (*)(UChar32))PSFindSymbolCallableCompat(ct, "__Z26IsDefaultEmojiPresentationj");
+        if (IsDefaultEmojiPresentationUSet == NULL) {
+            HBLogError(@"[CoreTextHack: EmojiPresentation] Fatal: couldn't find IsDefaultEmojiPresentation (USet)");
+            return;
+        }
+        %init(EmojiPresentationUSet);
     }
 #endif
 }

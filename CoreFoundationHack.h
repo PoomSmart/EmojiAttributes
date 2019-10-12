@@ -149,8 +149,9 @@ typedef struct {
     const uint8_t *bitmap;
 } CFCharacterSetInlineBuffer;
 
+void (*CFCharacterSetCompact)(CFMutableCharacterSetRef theSet);
+
 CF_EXTERN_C_BEGIN
-CF_EXPORT void CFCharacterSetCompact(CFMutableCharacterSetRef theSet);
 CF_EXPORT void CFCharacterSetInitInlineBuffer(CFCharacterSetRef cset, CFCharacterSetInlineBuffer *buffer);
 CF_EXPORT const uint8_t *CFUniCharGetBitmapPtrForPlane(uint32_t charset, uint32_t plane);
 CF_EXPORT const void *CFUniCharGetUnicodePropertyDataForPlane(uint32_t propertyType, uint32_t plane);
@@ -201,7 +202,8 @@ static const CFCharacterSetInlineBuffer *__CFStringGetGenderModifierBaseCharacte
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3)); // WRESTLERS ~ HANDBALL
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D6, 10)); // PERSON IN STEAMY ROOM ~ ZOMBIE
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B8, 2)); // SUPERHERO / SUPERVILLIAIN
-        CFCharacterSetCompact(cset);
+        if (CFCharacterSetCompact)
+            CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
     return (const CFCharacterSetInlineBuffer *)&buffer;
@@ -230,7 +232,8 @@ static const CFCharacterSetInlineBuffer *__CFStringGetProfessionModifierBaseChar
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F680, 1)); // 🚀U+1F680 ROCKET // Astronaut - 0xD83D 0xDE80
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x2696, 1)); // ⚖️U+2696 SCALES // Judge - 0x2696
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B0, 4)); // RED HAIR / CURLY HAIR / BALD / WHITE HAIR
-        CFCharacterSetCompact(cset);
+        if (CFCharacterSetCompact)
+            CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
     return (const CFCharacterSetInlineBuffer *)&buffer;
@@ -284,7 +287,8 @@ static const CFCharacterSetInlineBuffer *__CFStringGetFitzpatrickModifierBaseCha
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1)); // U+1F3CB WEIGHT LIFTER
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B5, 2)); // LEG / FOOT
         CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B8, 2)); // SUPERHERO / SUPERVILLAIN
-        CFCharacterSetCompact(cset);
+        if (CFCharacterSetCompact)
+            CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);
     });
     return (const CFCharacterSetInlineBuffer *)&buffer;
