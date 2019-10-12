@@ -2,10 +2,13 @@
 #import "CharacterSet.h"
 #import "EmojiCharacterSet.h"
 #import "EmojiPresentation.h"
+#import "uset.h"
 #import "../libsubstitrate/substitrate.h"
 #import <substrate.h>
 
 typedef int32_t UChar32;
+
+extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
 
 %config(generator=MobileSubstrate)
 
@@ -58,7 +61,8 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 
 #if __LP64__
 
-static CFMutableCharacterSetRef theSet = NULL;
+static USet *unicodeSet = NULL;
+static CFCharacterSetRef characterSet = NULL;
 
 %group EmojiPresentation
 
@@ -66,7 +70,7 @@ void (*IsDefaultEmojiPresentation)(void *);
 CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
 
 %hookf(void, IsDefaultEmojiPresentation, void *arg0) {
-    *DefaultEmojiPresentationSet = theSet;
+    *DefaultEmojiPresentationSet = (CFMutableCharacterSetRef)characterSet;
 }
 
 %end
@@ -75,7 +79,7 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
 
 bool (*IsDefaultEmojiPresentationUSet)(UChar32);
 %hookf(bool, IsDefaultEmojiPresentationUSet, UChar32 c) {
-    return CFCharacterSetIsCharacterMember(theSet, c);
+    return uset_contains(unicodeSet, c);
 }
 
 %end
@@ -87,15 +91,17 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     CreateCharacterSetForFont = (CFCharacterSetRef (*)(CFStringRef const))PSFindSymbolCallableCompat(ct, "__Z25CreateCharacterSetForFontPK10__CFString");
     XTCopyUncompressedBitmapRepresentation = (CFDataRef (*)(const UInt8 *, CFIndex))PSFindSymbolCallableCompat(ct, "__Z38XTCopyUncompressedBitmapRepresentationPKhm");
     if (XTCopyUncompressedBitmapRepresentation == NULL || CreateCharacterSetForFont == NULL) {
-        HBLogError(@"[CoreTextHack: CharacterSet] Fatal: couldn't find necessarry symbol(s)");
+        HBLogError(@"[CoreTextHack: CharacterSet] Fatal: couldn't find CreateCharacterSetForFont and/or XTCopyUncompressedBitmapRepresentation");
         return;
     }
     %init(CharacterSet);
 #if __LP64__
-    theSet = CFCharacterSetCreateMutable(kCFAllocatorDefault);
-    for (NSString *emoji : emojiPresentation)
-        CFCharacterSetAddCharactersInString(theSet, (__bridge CFStringRef)emoji);
-    CFRetain(theSet);
+    unicodeSet = uset_openEmpty();
+    for (int i = 0; i < emojiPresentationCount; ++i)
+        uset_add(unicodeSet, emojiPresentation[i]);
+    uset_freeze(unicodeSet);
+    characterSet = _CFCreateCharacterSetFromUSet(unicodeSet);
+    CFRetain(characterSet);
     if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
         IsDefaultEmojiPresentation = (void (*)(void *))PSFindSymbolCallableCompat(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
         if (IsDefaultEmojiPresentation == NULL)

@@ -1,4 +1,4 @@
-PACKAGE_VERSION = 1.3.23~b1
+PACKAGE_VERSION = 1.3.23~b2
 
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:8.0
@@ -18,9 +18,7 @@ endif
 EmojiAttributes_FILES = TextInputHack.xm CoreTextHack.xm WebCoreHack.xm CoreFoundationHack.xm EmojiSizeFix.xm
 EmojiAttributes_CFLAGS = -std=c++11
 EmojiAttributes_EXTRA_FRAMEWORKS = CydiaSubstrate
-ifneq ($(SIMULATOR),1)
-EmojiAttributes_LIBRARIES = Substitrate
-endif
+EmojiAttributes_LIBRARIES = icucore Substitrate
 EmojiAttributes_USE_SUBSTRATE = 1
 
 ifneq ($(SIMULATOR),1)
