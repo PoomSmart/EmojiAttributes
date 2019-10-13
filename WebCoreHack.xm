@@ -166,13 +166,13 @@ int (*RenderText_previousOffsetForBackwardDeletion)(void *, int);
                 break;
         }
         if (sawRegionalIndicator) {
-            if (isRegionalIndicator(character))
+            if (isEmojiRegionalIndicator(character))
                 break;
             U16_FWD_1_UNSAFE(text, current);
         }
         if (isInArmenianToLimbuRange(character))
             break;
-        if (isRegionalIndicator(character)) {
+        if (isEmojiRegionalIndicator(character)) {
             sawRegionalIndicator = true;
             continue;
         }
@@ -234,7 +234,7 @@ CodePath (*characterRangeCodePath)(const UChar *, unsigned);
 %hookf(CodePath, characterRangeCodePath, const UChar *characters, unsigned len) {
     CodePath result = Simple;
 	bool previousCharacterIsEmojiGroupCandidate = false;
-	for (unsigned i = 0; i < len; i++) {
+	for (unsigned i = 0; i < len; ++i) {
         const UChar c = characters[i];
         if (c == zeroWidthJoiner && previousCharacterIsEmojiGroupCandidate)
             return Complex;
@@ -465,13 +465,18 @@ bool (*advanceByCombiningCharacterSequence)(const UChar *&, const UChar *, UChar
         return false;
     bool sawEmojiGroupCandidate = isEmojiGroupCandidate(baseCharacter);
     bool sawJoiner = false;
+    bool sawRegionalIndicator = isEmojiRegionalIndicator(baseCharacter);
     while (iterator < end) {
         UChar32 nextCharacter;
         unsigned markLength = 0;
         bool shouldContinue = false;
-        U16_NEXT(iterator, markLength, end - iterator, nextCharacter);
+        U16_NEXT(iterator, markLength, static_cast<unsigned>(end - iterator), nextCharacter);
         if (isVariationSelector(nextCharacter) || isEmojiFitzpatrickModifier(nextCharacter))
             shouldContinue = true;
+        if (sawRegionalIndicator && isEmojiRegionalIndicator(nextCharacter)) {
+            shouldContinue = true;
+            sawRegionalIndicator = false;
+        }
         if (sawJoiner && isEmojiGroupCandidate(nextCharacter))
             shouldContinue = true;
         sawJoiner = false;

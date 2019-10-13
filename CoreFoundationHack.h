@@ -1,4 +1,5 @@
 #import <CoreFoundation/CoreFoundation.h>
+#import "Codepoints.h"
 
 #if defined(__BIG_ENDIAN__)
 #define __CF_BIG_ENDIAN__ 1
@@ -171,37 +172,9 @@ static const CFCharacterSetInlineBuffer *__CFStringGetGenderModifierBaseCharacte
     static dispatch_once_t initOnce;
     dispatch_once(&initOnce, ^{
         CFMutableCharacterSetRef cset = CFCharacterSetCreateMutable(NULL);
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x26F9, 1)); // PERSON WITH BALL
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C3, 1)); // RUNNER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3C4, 1)); // SURFER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CA, 1)); // SWIMMER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CB, 1)); // WEIGHT LIFTER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F3CC, 1)); // GOLFER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46E, 1)); // POLICE OFFICER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F46F, 1)); // TWO WOMEN DANCING
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F471, 1)); // PERSON WITH BLOND HAIR
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F473, 1)); // MAN WITH TURBAN
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F477, 1)); // CONSTRUCTION WORKER
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F481, 1)); // INFORMATION DESK PERSON
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F482, 1)); // GUARDSMAN
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F486, 1)); // FACE MASSAGE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F487, 1)); // HAIRCUT
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F575, 1)); // SLEUTH OR SPY
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F645, 1)); // FACE WITH NO GOOD GESTURE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F646, 1)); // FACE WITH OK GESTURE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F647, 1)); // PERSON BOWING DEEPLY
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64B, 1)); // HAPPY PERSON RAISING ONE HAND
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64D, 1)); // PERSON FROWNING
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F64E, 1)); // PERSON WITH POUTING FACE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6A3, 1)); // ROWBOAT
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B4, 1)); // BICYCLIST
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B5, 1)); // MOUNTAIN BICYCLIST
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F6B6, 1)); // PEDESTRIAN
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F926, 1)); // FACE PALM
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F937, 3)); // SHRUG ~ JUGGLING
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F93C, 3)); // WRESTLERS ~ HANDBALL
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9D6, 10)); // PERSON IN STEAMY ROOM ~ ZOMBIE
-        CFCharacterSetAddCharactersInRange(cset, CFRangeMake(0x1F9B8, 2)); // SUPERHERO / SUPERVILLIAIN
+        for (int i = 0; i < genderCodepointsCount; ++i) {
+            CFCharacterSetAddCharactersInRange(cset, CFRangeMake(genderCodepoints[i], 1));
+        }
         if (CFCharacterSetCompact)
             CFCharacterSetCompact(cset);
         CFCharacterSetInitInlineBuffer(cset, &buffer);

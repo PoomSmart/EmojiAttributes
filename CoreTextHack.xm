@@ -25,8 +25,6 @@ static NSData *dataFromHexString(NSString *string) {
     NSUInteger length = string.length;
     while (i < length - 1) {
         char c = [string characterAtIndex:i++];
-        if (c == ' ')
-            continue;
         byte_chars[0] = c;
         byte_chars[1] = [string characterAtIndex:i++];
         whole_byte = strtol(byte_chars, NULL, 16);
@@ -112,7 +110,7 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
             return;
         }
         %init(EmojiPresentation);
-    } else if (isiOS12_2Up) {
+    } else if (isiOS12_1Up) {
         IsDefaultEmojiPresentationUSet = (bool (*)(UChar32))PSFindSymbolCallableCompat(ct, "__Z26IsDefaultEmojiPresentationj");
         if (IsDefaultEmojiPresentationUSet == NULL) {
             HBLogError(@"[CoreTextHack: EmojiPresentation] Fatal: couldn't find IsDefaultEmojiPresentation (USet)");

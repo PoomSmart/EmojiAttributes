@@ -52,8 +52,8 @@ static inline bool isMark(UChar32 character){
     return U_GET_GC_MASK(character) & U_GC_M_MASK;
 }
 
-static inline bool isRegionalIndicator(UChar32 character){
-    return 0x1F1E6 <= character && character <= 0x1F1FF;
+static inline bool isEmojiRegionalIndicator(UChar32 character) {
+    return character >= 0x1F1E6 && character <= 0x1F1FF;
 }
 
 static inline bool isInArmenianToLimbuRange(UChar32 character){
