@@ -1,7 +1,5 @@
 #import "../PS.h"
 #import "CharacterSet.h"
-#import "EmojiCharacterSet.h"
-#import "EmojiPresentation.h"
 #import "uset.h"
 #import "../libsubstitrate/substitrate.h"
 #import <substrate.h>
@@ -45,11 +43,10 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
                     CFRelease(uncompressedData);
                     return ourSet;
                 }
-        } else {
-                CFDataRef legacyUncompressedData = (CFDataRef)dataFromHexString(uncompressedSet);
-                CFCharacterSetRef ourLegacySet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, legacyUncompressedData);
-                return ourLegacySet;
         }
+        CFDataRef legacyUncompressedData = (CFDataRef)dataFromHexString(uncompressedSet);
+        CFCharacterSetRef ourLegacySet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, legacyUncompressedData);
+        return ourLegacySet;
     }
     return %orig;
 }
@@ -57,6 +54,8 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 %end
 
 #if __LP64__
+
+#import "EmojiPresentation.h"
 
 static USet *unicodeSet = NULL;
 static CFCharacterSetRef characterSet = NULL;

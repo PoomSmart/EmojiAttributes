@@ -1,7 +1,7 @@
+#if !__arm64e__
+
 #import "../PS.h"
 #import <dlfcn.h>
-
-#if !__arm64e__
 
 %hook NSBundle
 

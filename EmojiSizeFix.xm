@@ -1,11 +1,11 @@
+#if !__arm64e__
+
 #import "../PS.h"
 #import "WebCoreSupport/CoreGraphicsSPI.h"
 #import <CoreText/CoreText.h>
 #import <substrate.h>
 
 %config(generator=MobileSubstrate)
-
-#if !__arm64e__
 
 double iOSVer = 0;
 

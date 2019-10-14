@@ -1,3 +1,5 @@
+#if !__arm64e__
+
 #import "../PS.h"
 #import "WebCoreSupport/CharactersProperties.h"
 #import "WebCoreSupport/RenderText.h"
@@ -7,8 +9,6 @@
 #import <substrate.h>
 
 %config(generator=MobileSubstrate)
-
-#if !__arm64e__
 
 enum CodePath {
     Auto, Simple, Complex, SimpleWithGlyphOverflow
