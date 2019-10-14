@@ -7,6 +7,7 @@ typedef struct USet USet;
 
 extern "C" {
     USet *uset_openEmpty(void);
+    void uset_close(USet *);
     void uset_freeze(USet *);
     void uset_add(USet *, UChar32);
     UBool uset_contains(USet *, UChar32);
