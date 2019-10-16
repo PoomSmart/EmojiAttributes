@@ -86,24 +86,26 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
             iOSVer = 6.1;
         else
             iOSVer = 6.0;
-        MSImageRef ctref = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
         MSImageRef wcref = MSGetImageByName(realPath2(@"/System/Library/PrivateFrameworks/WebCore.framework/WebCore"));
-        CTFontIsAppleColorEmoji = (BOOL (*)(CTFontRef))MSFindSymbol(ctref, "_CTFontIsAppleColorEmoji");
         FontPlatformData_ctFont = (CTFontRef (*)(void *))MSFindSymbol(wcref, "__ZNK7WebCore16FontPlatformData6ctFontEv");
+        HBLogDebug(@"Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
+        %init;
+#if !__LP64__
+        MSImageRef ctref = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
+        CTFontIsAppleColorEmoji = (BOOL (*)(CTFontRef))MSFindSymbol(ctref, "_CTFontIsAppleColorEmoji");
         platformWidthForGlyph = (float (*)(void *, CGGlyph))MSFindSymbol(wcref, "__ZNK7WebCore4Font21platformWidthForGlyphEt");
         if (platformWidthForGlyph == NULL)
             platformWidthForGlyph = (float (*)(void *, CGGlyph))MSFindSymbol(wcref, "__ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt");
         platformInit = (void (*)(void *))MSFindSymbol(wcref, "__ZN7WebCore14SimpleFontData12platformInitEv");
-        HBLogDebug(@"Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
         HBLogDebug(@"Found platformWidthForGlyph: %d", platformWidthForGlyph != NULL);
-        HBLogDebug(@"Found platformInit: %d", platformInit != NULL);;
-        %init;
+        HBLogDebug(@"Found platformInit: %d", platformInit != NULL);
         if (iOSVer < 7.0) {
             %init(iOS6);
             if (iOSVer == 6.0) {
                 %init(iOS60);
             }
         }
+#endif
     }
 }
 

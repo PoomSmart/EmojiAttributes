@@ -123,8 +123,6 @@ namespace WTF {
 	class String {
 	public:
 		String() { }
-		//template<size_t inlineCapacity>
-		//explicit String(const Vector<UChar, inlineCapacity>&);
 		String(StringImpl* impl) : m_impl(impl) { }
 		String(RefPtr<StringImpl> impl) : m_impl(impl) { }
 		void swap(String& o) { m_impl.swap(o.m_impl); }
@@ -174,11 +172,7 @@ namespace WTF {
 		void insert(const String&, unsigned pos);
 		void insert(const UChar*, unsigned length, unsigned pos);
 		
-		CString utf8(ConversionMode = LenientConversion) const; /*{
-			if (!m_impl)
-				return CString("", 0);
-    		return m_impl->utf8(mode);
-		}*/
+		CString utf8(ConversionMode = LenientConversion) const;
 	private:
     	RefPtr<StringImpl> m_impl;
 	};
@@ -261,12 +255,6 @@ namespace WTF {
 			m_characters = string.characters16();
 			return;
 		}
-		/*const LChar* characters8 = string.characters8();
-		unsigned length = string.m_length;
-		m_upconvertedCharacters.reserveInitialCapacity(length);
-		for (unsigned i = 0; i < length; ++i)
-			m_upconvertedCharacters.uncheckedAppend(characters8[i]);
-		m_characters = m_upconvertedCharacters.data();*/
 	}
 	inline StringView::StringView(const String& string) {
 		if (!string.impl()) {

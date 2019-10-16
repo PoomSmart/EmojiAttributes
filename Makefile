@@ -1,4 +1,4 @@
-PACKAGE_VERSION = 1.3.23~b7
+PACKAGE_VERSION = 1.3.23~b8
 
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:8.0
@@ -16,7 +16,7 @@ else
 	EmojiAttributes_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries/EmojiAttributes
 endif
 EmojiAttributes_FILES = TextInputHack.xm CoreTextHack.xm WebCoreHack.xm CoreFoundationHack.xm CoreEmojiHack.xm EmojiSizeFix.xm
-EmojiAttributes_CFLAGS = -std=c++11
+EmojiAttributes_CCFLAGS = -std=c++11 -stdlib=libc++
 EmojiAttributes_EXTRA_FRAMEWORKS = CydiaSubstrate
 EmojiAttributes_LIBRARIES = icucore
 EmojiAttributes_USE_SUBSTRATE = 1

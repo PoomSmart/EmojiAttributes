@@ -61,9 +61,8 @@ void *(*EmojiData)(void *, CFURLRef const, CFURLRef const);
         return;
     MSImageRef ref = MSGetImageByName(realPath2(@"/System/Library/PrivateFrameworks/CoreEmoji.framework/CoreEmoji"));
 #if __LP64__
-    if (isiOS12Up)
+    if (isiOS12Up) {
         EmojiData12 = (void (*)(void *, CFURLRef const, CFURLRef const))_PSFindSymbolCallable(ref, "__ZN3CEM9EmojiDataC1EPK7__CFURLS3_");
-    if (EmojiData12) {
         %init(EmojiData12Hook);
     }
 #endif
@@ -71,7 +70,5 @@ void *(*EmojiData)(void *, CFURLRef const, CFURLRef const);
         EmojiData = (void *(*)(void *, CFURLRef const, CFURLRef const))MSFindSymbol(ref, "__ZN3CEM9EmojiDataC1EPK7__CFURLS3_");
     else
         EmojiData = (void *(*)(void *, CFURLRef const, CFURLRef const))MSFindSymbol(ref, "__ZN3CEM9EmojiDataC2EPK7__CFURLS3_");
-    if (EmojiData) {
-        %init(EmojiDataHook);
-    }
+    %init(EmojiDataHook);
 }
