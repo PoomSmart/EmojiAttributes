@@ -1,6 +1,6 @@
 Package: com.ps.emojiattributes
 Name: EmojiAttributes
-Depends: mobilesubstrate, com.ps.libsubstitrate
+Depends: mobilesubstrate
 Conflicts: com.ps.flexmoji
 Version: 1.0.0
 Architecture: iphoneos-arm

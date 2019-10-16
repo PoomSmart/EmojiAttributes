@@ -1,7 +1,6 @@
 #import "../PS.h"
 #import <CoreFoundation/CoreFoundation.h>
 #import "CoreFoundationHack.h"
-#import "../libsubstitrate/substitrate.h"
 #import <substrate.h>
 
 %config(generator=MobileSubstrate)
@@ -502,7 +501,7 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
 %ctor {
     if (isiOS12_1Up)
         return;
-    const char *cf = realPath2(@"/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation");
-    CFCharacterSetCompact = (void (*)(CFMutableCharacterSetRef))PSFindSymbolCallableCompat(cf, "_CFCharacterSetCompact");
+    MSImageRef cf = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"));
+    CFCharacterSetCompact = (void (*)(CFMutableCharacterSetRef))_PSFindSymbolCallable(cf, "_CFCharacterSetCompact");
     %init;
 }

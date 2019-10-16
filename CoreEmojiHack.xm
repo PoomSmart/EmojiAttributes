@@ -1,6 +1,5 @@
 #import "../PS.h"
 #import "EmojiMetadata.h"
-#import "../libsubstitrate/substitrate.h"
 #import <substrate.h>
 
 %config(generator=MobileSubstrate)
