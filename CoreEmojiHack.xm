@@ -64,6 +64,7 @@ void *(*EmojiData)(void *, CFURLRef const, CFURLRef const);
     if (isiOS12Up) {
         EmojiData12 = (void (*)(void *, CFURLRef const, CFURLRef const))_PSFindSymbolCallable(ref, "__ZN3CEM9EmojiDataC1EPK7__CFURLS3_");
         %init(EmojiData12Hook);
+        return;
     }
 #endif
     if (isiOS11Up)
