@@ -1,3 +1,4 @@
 .theos
 .DS_Store
 ICUHack.xm
+packages/*
