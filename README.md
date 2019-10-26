@@ -24,6 +24,3 @@ This framework does a lot of things to displaying content in websites, including
 
 ## Emoji Size Fix (iOS 6 - 9)
 Remove WebCore/CoreText emoji size restriction. See [here](https://emojier.com/faq/15122z-ios-small-font-size-emoji-hell).
-
-## CoreEmoji (iOS >= 10)
-This dedicated framework by Apple deals with emojis display logic at the low level (C++). One of the key point of it is a way to inject emoji metadata into the system correctly. On iOS 12.1 onwards, the "padding" is 16 whereas the earlier versions get 12 (More details once I figured out how the metadata file is constructed) - making the latest emoji metadata useless for those earlier versions and it needs some runtime modification as done in the code here.

@@ -56,19 +56,22 @@ void (*platformInit)(void *);
 float (*platformWidthForGlyph)(void *, CGGlyph);
 %hookf(float, platformWidthForGlyph, void *arg0, CGGlyph code) {
     CTFontRef font = iOSVer >= 7.0 ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
-    if (((CTFontIsAppleColorEmoji && CTFontIsAppleColorEmoji(font)) || (CFEqual(CFBridgingRelease(CTFontCopyPostScriptName(font)), CFSTR("AppleColorEmoji"))))) {
+    BOOL isEmojiFont = CTFontIsAppleColorEmoji && CTFontIsAppleColorEmoji(font);
+    if (!isEmojiFont) {
+        CFStringRef fontName = CTFontCopyPostScriptName(font);
+        isEmojiFont = CFStringEqual(fontName, CFSTR("AppleColorEmoji"));
+        CFRelease(fontName);
+    }
+    if (isEmojiFont) {
         CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderingStyleSubpixelPositioning | kCGFontRenderingStyleSubpixelQuantization | kCGFontAntialiasingStyleUnfiltered;
-        CGFloat pointSize = iOSVer >= 6.1 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34); // 6.1.6 vs lower
-        if (pointSize == 0 && iOSVer != 6.0)
-            pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x34); // <= 6.1.5
-        if (iOSVer == 6.0)
-            pointSize = *(CGFloat *)((uint8_t *)arg0 + 0xE);
+        CGFloat pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x38);
         CGSize advance = CGSizeMake(0, 0);
         CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
-        CGFontRef cgFont = CTFontCopyGraphicsFont(font, NULL);
+        CGFontRef cgFont = iOSVer >= 7.0 ? CTFontCopyGraphicsFont(font, NULL) : *(CGFontRef *)((uint8_t *)arg0 + 0x44);
         if (!CGFontGetGlyphAdvancesForStyle(cgFont, &m, style, &code, 1, &advance))
             advance.width = 0;
-        CFRelease(cgFont);
+        if (iOSVer >= 7.0)
+            CFRelease(cgFont);
         return advance.width + 4.0;
     }
     return %orig;
@@ -87,9 +90,6 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         else
             iOSVer = 6.0;
         MSImageRef wcref = MSGetImageByName(realPath2(@"/System/Library/PrivateFrameworks/WebCore.framework/WebCore"));
-        FontPlatformData_ctFont = (CTFontRef (*)(void *))MSFindSymbol(wcref, "__ZNK7WebCore16FontPlatformData6ctFontEv");
-        HBLogDebug(@"Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
-        %init;
 #if !__LP64__
         MSImageRef ctref = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
         CTFontIsAppleColorEmoji = (BOOL (*)(CTFontRef))MSFindSymbol(ctref, "_CTFontIsAppleColorEmoji");
@@ -106,6 +106,9 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
             }
         }
 #endif
+        FontPlatformData_ctFont = (CTFontRef (*)(void *))MSFindSymbol(wcref, "__ZNK7WebCore16FontPlatformData6ctFontEv");
+        HBLogDebug(@"Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
+        %init;
     }
 }
 
