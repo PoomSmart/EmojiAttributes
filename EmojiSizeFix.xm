@@ -9,6 +9,8 @@
 
 double iOSVer = 0;
 
+CGFontRef cgFont = NULL;
+
 BOOL (*CTFontIsAppleColorEmoji)(CTFontRef);
 extern "C" bool CGFontGetGlyphAdvancesForStyle(CGFontRef, CGAffineTransform *, CGFontRenderingStyle, const CGGlyph *, size_t, CGSize *);
 
@@ -53,6 +55,8 @@ void (*platformInit)(void *);
 
 %group iOS6
 
+CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderingStyleSubpixelPositioning | kCGFontRenderingStyleSubpixelQuantization | kCGFontAntialiasingStyleUnfiltered;
+
 float (*platformWidthForGlyph)(void *, CGGlyph);
 %hookf(float, platformWidthForGlyph, void *arg0, CGGlyph code) {
     CTFontRef font = iOSVer >= 7.0 ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
@@ -63,15 +67,15 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         CFRelease(fontName);
     }
     if (isEmojiFont) {
-        CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderingStyleSubpixelPositioning | kCGFontRenderingStyleSubpixelQuantization | kCGFontAntialiasingStyleUnfiltered;
-        CGFloat pointSize = *(CGFloat *)((uint8_t *)arg0 + 0x38);
+        CGFloat pointSize = iOSVer >= 7.0 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34);
         CGSize advance = CGSizeMake(0, 0);
         CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
-        CGFontRef cgFont = iOSVer >= 7.0 ? CTFontCopyGraphicsFont(font, NULL) : *(CGFontRef *)((uint8_t *)arg0 + 0x44);
+        if (cgFont == NULL) {
+            cgFont = CTFontCopyGraphicsFont(font, NULL);
+            CFRetain(cgFont);
+        }
         if (!CGFontGetGlyphAdvancesForStyle(cgFont, &m, style, &code, 1, &advance))
             advance.width = 0;
-        if (iOSVer >= 7.0)
-            CFRelease(cgFont);
         return advance.width + 4.0;
     }
     return %orig;
@@ -110,6 +114,15 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         HBLogDebug(@"Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
         %init;
     }
+}
+
+#endif
+
+#if !__LP64__
+
+%dtor {
+    if (cgFont)
+        CFRelease(cgFont);
 }
 
 #endif

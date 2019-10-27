@@ -43,7 +43,7 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
                     return ourSet;
                 }
         }
-        CFDataRef legacyUncompressedData = (CFDataRef)dataFromHexString(uncompressedSet);
+        CFDataRef legacyUncompressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, uncompressedSet, uncompressedSetLength, kCFAllocatorNull);
         CFCharacterSetRef ourLegacySet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, legacyUncompressedData);
         return ourLegacySet;
     }
