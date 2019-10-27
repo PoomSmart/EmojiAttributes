@@ -7,7 +7,7 @@
 
 %config(generator=MobileSubstrate)
 
-double iOSVer = 0;
+short iOSVer = 0;
 
 CGFontRef cgFont = NULL;
 
@@ -16,15 +16,15 @@ extern "C" bool CGFontGetGlyphAdvancesForStyle(CGFontRef, CGAffineTransform *, C
 
 bool *findIsEmoji(void *arg0) {
 #if __LP64__
-    if (iOSVer >= 9.0)
+    if (iOSVer >= 90)
         return (bool *)((uint8_t *)arg0 + 0x2B);
-    else if (iOSVer >= 7.0)
+    else if (iOSVer >= 70)
         return (bool *)((uint8_t *)arg0 + 0x8);
     return (bool *)((uint8_t *)arg0 + 0xC);
 #else
-    if (iOSVer >= 9.0)
+    if (iOSVer >= 90)
         return (bool *)((uint8_t *)arg0 + 0x1F);
-    else if (iOSVer >= 6.1)
+    else if (iOSVer >= 61)
         return (bool *)((uint8_t *)arg0 + 0x8);
     return (bool *)((uint8_t *)arg0 + 0xC);
 #endif
@@ -59,7 +59,7 @@ CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderin
 
 float (*platformWidthForGlyph)(void *, CGGlyph);
 %hookf(float, platformWidthForGlyph, void *arg0, CGGlyph code) {
-    CTFontRef font = iOSVer >= 7.0 ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
+    CTFontRef font = iOSVer >= 70 ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
     BOOL isEmojiFont = CTFontIsAppleColorEmoji && CTFontIsAppleColorEmoji(font);
     if (!isEmojiFont) {
         CFStringRef fontName = CTFontCopyPostScriptName(font);
@@ -67,7 +67,7 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         CFRelease(fontName);
     }
     if (isEmojiFont) {
-        CGFloat pointSize = iOSVer >= 7.0 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34);
+        CGFloat pointSize = iOSVer >= 70 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34);
         CGSize advance = CGSizeMake(0, 0);
         CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
         if (cgFont == NULL) {
@@ -86,13 +86,13 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
 %ctor {
     if (IS_IOS_BETWEEN_EEX(iOS_6_0, iOS_10_0)) {
         if (isiOS9Up)
-            iOSVer = 9.0;
+            iOSVer = 90;
         else if (isiOS7Up)
-            iOSVer = 7.0;
+            iOSVer = 70;
         else if (isiOS61Up)
-            iOSVer = 6.1;
+            iOSVer = 61;
         else
-            iOSVer = 6.0;
+            iOSVer = 60;
         MSImageRef wcref = MSGetImageByName(realPath2(@"/System/Library/PrivateFrameworks/WebCore.framework/WebCore"));
 #if !__LP64__
         MSImageRef ctref = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
@@ -103,9 +103,9 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         platformInit = (void (*)(void *))MSFindSymbol(wcref, "__ZN7WebCore14SimpleFontData12platformInitEv");
         HBLogDebug(@"Found platformWidthForGlyph: %d", platformWidthForGlyph != NULL);
         HBLogDebug(@"Found platformInit: %d", platformInit != NULL);
-        if (iOSVer < 7.0) {
+        if (iOSVer < 70) {
             %init(iOS6);
-            if (iOSVer == 6.0) {
+            if (iOSVer == 60) {
                 %init(iOS60);
             }
         }

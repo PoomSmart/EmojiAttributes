@@ -10,31 +10,12 @@ extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
 
 %group CharacterSet
 
-static NSData *dataFromHexString(NSString *string) {
-    string = [string lowercaseString];
-    NSMutableData *data = [NSMutableData new];
-    unsigned char whole_byte;
-    char byte_chars[3] = {
-        '\0', '\0', '\0'
-    };
-    NSUInteger i = 0;
-    NSUInteger length = string.length;
-    while (i < length - 1) {
-        char c = [string characterAtIndex:i++];
-        byte_chars[0] = c;
-        byte_chars[1] = [string characterAtIndex:i++];
-        whole_byte = strtol(byte_chars, NULL, 16);
-        [data appendBytes:&whole_byte length:1];
-    }
-    return data;
-}
-
 CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
 CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 %hookf(CFCharacterSetRef, CreateCharacterSetForFont, CFStringRef const fontName) {
     if (CFStringEqual(fontName, CFSTR("AppleColorEmoji")) || CFStringEqual(fontName, CFSTR(".AppleColorEmojiUI"))) {
         if (isiOS11Up) {
-                CFDataRef compressedData = (__bridge CFDataRef)dataFromHexString(compressedSet);
+                CFDataRef compressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, compressedSet, compressedSetLength, kCFAllocatorNull);
                 CFDataRef uncompressedData = XTCopyUncompressedBitmapRepresentation(CFDataGetBytePtr(compressedData), CFDataGetLength(compressedData));
                 CFRelease(compressedData);
                 if (uncompressedData) {
