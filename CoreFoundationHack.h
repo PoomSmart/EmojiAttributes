@@ -293,7 +293,7 @@ static inline bool __CFStringIsGenderModifierCluster(CFStringInlineBuffer *buffe
 }
 
 static inline bool __CFStringIsBaseForManOrWomanCluster(UTF16Char character) {
-    return ((character == 0xDC68) || (character == 0xDC69)); // Low surrogate chars representing MAN (U+1F468) and WOMAN (U+1F469) respectively
+    return ((character == 0xDC68) || (character == 0xDC69) || (character == 0xDDD1)); // Low surrogate chars representing MAN (U+1F468) and WOMAN (U+1F469) respectively
 }
 
 static inline bool __CFStringIsProfessionBaseCluster(CFStringInlineBuffer *buffer, CFRange range) {
@@ -331,16 +331,16 @@ static inline bool __CFStringIsProfessionModifierCluster(CFStringInlineBuffer *b
 }
 
 static inline bool __CFStringIsFamilySequenceBaseCharacterHigh(UTF16Char character) {
-    return (character == 0xD83D) ? true : false;
+    return ((character == 0xD83D) || (character == 0xD83E)) ? true : false;
 }
 
 static inline bool __CFStringIsFamilySequenceBaseCharacterLow(UTF16Char character) {
-    return (((character >= 0xDC66) && (character <= 0xDC69)) || (character == 0xDC8B) || (character == 0xDC41) || (character == 0xDDE8)) ? true : false;
+    return (((character >= 0xDC66) && (character <= 0xDC69)) || (character == 0xDC8B) || (character == 0xDC41) || (character == 0xDDD1) || (character == 0xDDE8)) ? true : false;
 }
 
 static inline bool __CFStringIsFamilySequenceCluster(CFStringInlineBuffer *buffer, CFRange range) {
     UTF16Char character = CFStringGetCharacterFromInlineBuffer(buffer, range.location);
-    if (character == 0x2764 || character == 0xFE0F || character == 0x2640 || character == 0x2642) // HEART or variant selector or gender selector
+    if (character == 0x2764 || character == 0xFE0F || character == 0x2640 || character == 0x2642 || character == 0xD83E || character == 0xDD1D) // HEART or variant selector or gender selector
         return true;
     if (range.length > 1) {
         if (__CFStringIsFamilySequenceBaseCharacterHigh(character) && __CFStringIsFamilySequenceBaseCharacterLow(CFStringGetCharacterFromInlineBuffer(buffer, range.location + 1)))
