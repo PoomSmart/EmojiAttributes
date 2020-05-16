@@ -3,7 +3,7 @@
 
 namespace WebCore {
 
-static inline bool isEmojiGroupCandidate(UChar32 character){
+static inline bool isEmojiGroupCandidate(UChar32 character) {
     auto unicodeBlock = ublock_getCode(character);
     if (unicodeBlock == UBLOCK_MISCELLANEOUS_SYMBOLS
         || unicodeBlock == UBLOCK_DINGBATS
@@ -11,11 +11,11 @@ static inline bool isEmojiGroupCandidate(UChar32 character){
         || unicodeBlock == UBLOCK_EMOTICONS
         || unicodeBlock == UBLOCK_TRANSPORT_AND_MAP_SYMBOLS)
         return true;
-    #if ICU_HEADERS_UNDERSTAND_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS
+#if ICU_HEADERS_UNDERSTAND_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS
     static bool useSupplementalSymbolsAndPictographs = icuLibraryUnderstandsSupplementalSymbolsAndPictographs();
     if (useSupplementalSymbolsAndPictographs)
         return unicodeBlock == UBLOCK_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS;
-    #endif
+#endif
     return character >= 0x1F900 && character <= 0x1F9FF;
 }
 
