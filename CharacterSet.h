@@ -1,5 +1,6 @@
 // EmojiCategory > -readFontCache:YES
 // The bitmap representation of emojis, compressed and uncompressed
+#ifdef COMPRESSED_SET
 #define compressedSetLength 492
 static uint8_t compressedSet[] = {
     0x2, 0x0, 0x0, 0x0, 0x2, 0x60, 0x0, 0x0, 0x4, 0x80,
@@ -53,6 +54,7 @@ static uint8_t compressedSet[] = {
     0x0, 0xe, 0x6, 0x0, 0x2, 0x80, 0xfe, 0xff, 0xff, 0x87,
     0xf8, 0xf
 };
+#endif
 
 #define uncompressedSetLength 24578
 static uint8_t uncompressedSet[] = {

@@ -1,5 +1,4 @@
 #import <CoreFoundation/CoreFoundation.h>
-#import "Codepoints.h"
 
 #if defined(__BIG_ENDIAN__)
 #define __CF_BIG_ENDIAN__ 1
@@ -122,10 +121,10 @@ enum {
 };
 
 typedef enum {
-    kCFStringGraphemeCluster = 1,     /* Unicode Grapheme Cluster (not different from kCFStringComposedCharacterCluster right now) */
-    kCFStringComposedCharacterCluster = 2,     /* Compose all non-base (including spacing marks) */
-    kCFStringCursorMovementCluster = 3,     /* Cluster suitable for cursor movements */
-    kCFStringBackwardDeletionCluster = 4     /* Cluster suitable for backward deletion */
+    kCFStringGraphemeCluster = 1,
+    kCFStringComposedCharacterCluster = 2,
+    kCFStringCursorMovementCluster = 3,
+    kCFStringBackwardDeletionCluster = 4
 } CFStringCharacterClusterType;
 
 enum {

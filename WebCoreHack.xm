@@ -4,9 +4,9 @@
 #import "WebCoreSupport/CharactersProperties.h"
 #import "WebCoreSupport/RenderText.h"
 #import "WebCoreSupport/CoreGraphicsSPI.h"
-#include <unicode/utf16.h>
 #import <CoreText/CoreText.h>
 #import <substrate.h>
+#include <unicode/utf16.h>
 
 %config(generator=MobileSubstrate)
 
