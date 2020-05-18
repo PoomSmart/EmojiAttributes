@@ -1,7 +1,8 @@
 #import "../PS.h"
 #import "CoreFoundationHack.h"
 #import <substrate.h>
-#include <unicode/utf16.h>
+
+#include <unicode/utypes.h>
 
 %config(generator=MobileSubstrate)
 

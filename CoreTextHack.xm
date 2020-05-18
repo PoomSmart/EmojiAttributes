@@ -2,6 +2,7 @@
 #import "CharacterSet.h"
 #import "uset.h"
 #import <substrate.h>
+#import "PSEmojiData.h"
 #include <unicode/utf16.h>
 
 extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
@@ -23,8 +24,6 @@ CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
 %end
 
 #if __LP64__
-
-#import "EmojiPresentation.h"
 
 static USet *unicodeSet = NULL;
 static CFCharacterSetRef characterSet = NULL;
@@ -58,7 +57,8 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     %init(CharacterSet);
 #if __LP64__
     unicodeSet = uset_openEmpty();
-    for (int i = 0; i < emojiPresentationCount; ++i)
+    UChar32 *emojiPresentation = [PSEmojiData presentation];
+    for (int i = 0; i < [PSEmojiData presentationCount]; ++i)
         uset_add(unicodeSet, emojiPresentation[i]);
     uset_freeze(unicodeSet);
     characterSet = _CFCreateCharacterSetFromUSet(unicodeSet);
