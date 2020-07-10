@@ -8,7 +8,7 @@ Various under-the-hood fixes for emoji display.
 This framework is an intermediate layer between text display and text representation in iOS. It mainly handles character sets of such supported fonts, including emoji.
 
 ### Character Set Addition
-Emoji character set for display is hard-coded in bitmap format and retrievable from `CreateCharacterSetForFont()`. The set changes from version to version of iOS. We need to override this with the latest character set. To get the character set needed, we can dump one from `libGSFontCache.dylib` which is what [EmojiCategory](https://github.com/PoomSmart/EmojiCategory) does. Wtihout this override, emojis can be all shadowed (black out).
+Emoji character set for display is hard-coded in bitmap format and retrievable from `CreateCharacterSetForFont()`. The set changes from version to version of iOS. We need to override this with the latest character set. To get the character set needed, we can dump one from `libGSFontCache.dylib` which is what [EmojiCategory](https://github.com/PoomSmart/EmojiCategory) does. Without this override, emojis can be all shadowed (black out).
 
 ### Emoji Presentation Addition
 As of iOS 11, a weird function `IsDefaultEmojiPresentation()` seems to determine which emojis are really supported by the system before showing them. While it is unknown where exactly does this function matters, hooking this function may be good for the future. The representation is just an array of strings and we can accumulate every single emoji and override it with that.

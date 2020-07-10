@@ -19,10 +19,10 @@ int binary_search(UChar32 arr[], int l, int r, UChar32 c) {
 }
 
 %hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
-    if (c > 0x231a && c < 0x1ffff && which == UCHAR_EMOJI_PRESENTATION) {
+    if (which == UCHAR_EMOJI_PRESENTATION) {
         return binary_search([PSEmojiData presentation], 0, [PSEmojiData presentationCount] - 1, c) != -1;
     }
-    if (c > 0xa9 && c < 0x1ffff && which == UCHAR_EXTENDED_PICTOGRAPHIC) {
+    if (which == UCHAR_EXTENDED_PICTOGRAPHIC) {
         return binary_search([PSEmojiData pictographic], 0, [PSEmojiData pictographicCount] - 1, c) != -1;
     }
     return %orig(c, which);

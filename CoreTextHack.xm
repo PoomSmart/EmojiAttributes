@@ -1,4 +1,5 @@
 #import "../PS.h"
+#define COMPRESSED_SET
 #import "CharacterSet.h"
 #import "uset.h"
 #import <substrate.h>
@@ -12,8 +13,19 @@ extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
 %group CharacterSet
 
 CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
+CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 %hookf(CFCharacterSetRef, CreateCharacterSetForFont, CFStringRef const fontName) {
     if (CFStringEqual(fontName, CFSTR("AppleColorEmoji")) || CFStringEqual(fontName, CFSTR(".AppleColorEmojiUI"))) {
+        if (isiOS11Up) {
+            CFDataRef compressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, compressedSet, compressedSetLength, kCFAllocatorNull);
+            CFDataRef uncompressedData = XTCopyUncompressedBitmapRepresentation(CFDataGetBytePtr(compressedData), CFDataGetLength(compressedData));
+            CFRelease(compressedData);
+            if (uncompressedData) {
+                CFCharacterSetRef ourSet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, uncompressedData);
+                CFRelease(uncompressedData);
+                return ourSet;
+            }
+        }
         CFDataRef uncompressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, uncompressedSet, uncompressedSetLength, kCFAllocatorNull);
         CFCharacterSetRef ourSet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, uncompressedData);
         return ourSet;
@@ -54,6 +66,8 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     MSImageRef ct = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
     CreateCharacterSetForFont = (CFCharacterSetRef (*)(CFStringRef const))_PSFindSymbolCallable(ct, "__Z25CreateCharacterSetForFontPK10__CFString");
     HBLogDebug(@"[CoreTextHack: CharacterSet] CreateCharacterSetForFont found: %d", CreateCharacterSetForFont != NULL);
+    XTCopyUncompressedBitmapRepresentation = (CFDataRef (*)(const UInt8 *, CFIndex))_PSFindSymbolCallable(ct, "__Z38XTCopyUncompressedBitmapRepresentationPKhm");
+    HBLogDebug(@"[CoreTextHack: CharacterSet] XTCopyUncompressedBitmapRepresentation found: %d", XTCopyUncompressedBitmapRepresentation != NULL);
     %init(CharacterSet);
 #if __LP64__
     unicodeSet = uset_openEmpty();
