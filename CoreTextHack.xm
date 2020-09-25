@@ -13,11 +13,17 @@ extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
 %group CharacterSet
 
 CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
+CFCharacterSetRef (*CreateCharacterSetWithCompressedBitmapRepresentation)(const CFDataRef characterSet);
 CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 %hookf(CFCharacterSetRef, CreateCharacterSetForFont, CFStringRef const fontName) {
     if (CFStringEqual(fontName, CFSTR("AppleColorEmoji")) || CFStringEqual(fontName, CFSTR(".AppleColorEmojiUI"))) {
         if (isiOS11Up) {
             CFDataRef compressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, compressedSet, compressedSetLength, kCFAllocatorNull);
+            if (CreateCharacterSetWithCompressedBitmapRepresentation != NULL) {
+                CFCharacterSetRef uncompressedSet = CreateCharacterSetWithCompressedBitmapRepresentation(compressedData);
+                CFRelease(compressedData);
+                return uncompressedSet;
+            }
             CFDataRef uncompressedData = XTCopyUncompressedBitmapRepresentation(CFDataGetBytePtr(compressedData), CFDataGetLength(compressedData));
             CFRelease(compressedData);
             if (uncompressedData) {
@@ -68,6 +74,8 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     HBLogDebug(@"[CoreTextHack: CharacterSet] CreateCharacterSetForFont found: %d", CreateCharacterSetForFont != NULL);
     XTCopyUncompressedBitmapRepresentation = (CFDataRef (*)(const UInt8 *, CFIndex))_PSFindSymbolCallable(ct, "__Z38XTCopyUncompressedBitmapRepresentationPKhm");
     HBLogDebug(@"[CoreTextHack: CharacterSet] XTCopyUncompressedBitmapRepresentation found: %d", XTCopyUncompressedBitmapRepresentation != NULL);
+    CreateCharacterSetWithCompressedBitmapRepresentation = (CFCharacterSetRef (*)(const CFDataRef))_PSFindSymbolCallable(ct, "__Z52CreateCharacterSetWithCompressedBitmapRepresentationPK8__CFData");
+    HBLogDebug(@"[CoreTextHack: CharacterSet] CreateCharacterSetWithCompressedBitmapRepresentation found: %d", CreateCharacterSetWithCompressedBitmapRepresentation != NULL);
     %init(CharacterSet);
 #if __LP64__
     unicodeSet = uset_openEmpty();
