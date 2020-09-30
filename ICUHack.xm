@@ -1,4 +1,3 @@
-#import "../PS.h"
 #import "PSEmojiData.h"
 
 #include <unicode/utf8.h>
@@ -29,7 +28,5 @@ int binary_search(UChar32 arr[], int l, int r, UChar32 c) {
 }
 
 %ctor {
-    if (isiOS13_2Up)
-        return;
     %init;
 }
