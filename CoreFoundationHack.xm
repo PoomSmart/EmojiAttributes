@@ -683,7 +683,7 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
 }
 
 %ctor {
-    if (isiOS13_2Up)
+    if (IS_IOS_OR_NEWER(iOS_13_2))
         return;
     %init;
 }

@@ -17,7 +17,7 @@ CFCharacterSetRef (*CreateCharacterSetWithCompressedBitmapRepresentation)(const 
 CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 %hookf(CFCharacterSetRef, CreateCharacterSetForFont, CFStringRef const fontName) {
     if (CFStringEqual(fontName, CFSTR("AppleColorEmoji")) || CFStringEqual(fontName, CFSTR(".AppleColorEmojiUI"))) {
-        if (isiOS11Up) {
+        if (IS_IOS_OR_NEWER(iOS_11_0)) {
             CFDataRef compressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, compressedSet, compressedSetLength, kCFAllocatorNull);
             if (CreateCharacterSetWithCompressedBitmapRepresentation != NULL) {
                 CFCharacterSetRef uncompressedSet = CreateCharacterSetWithCompressedBitmapRepresentation(compressedData);
@@ -36,7 +36,7 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
         CFCharacterSetRef ourSet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, uncompressedData);
         return ourSet;
     }
-    return %orig;
+    return %orig(fontName);
 }
 
 %end
@@ -79,9 +79,8 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     %init(CharacterSet);
 #if __LP64__
     unicodeSet = uset_openEmpty();
-    UChar32 *emojiPresentation = [PSEmojiData presentation];
-    for (int i = 0; i < [PSEmojiData presentationCount]; ++i)
-        uset_add(unicodeSet, emojiPresentation[i]);
+    for (int i = 0; i < presentationCount; ++i)
+        uset_add(unicodeSet, presentation[i]);
     uset_freeze(unicodeSet);
     characterSet = _CFCreateCharacterSetFromUSet(unicodeSet);
     CFRetain(characterSet);
@@ -93,7 +92,7 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] IsDefaultEmojiPresentation found: %d", IsDefaultEmojiPresentation != NULL);
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] DefaultEmojiPresentationSet found: %d", DefaultEmojiPresentationSet != NULL);
         %init(EmojiPresentation);
-    } else if (isiOS12_1Up) {
+    } else if (IS_IOS_OR_NEWER(iOS_12_1)) {
         IsDefaultEmojiPresentationUSet = (bool (*)(UChar32))_PSFindSymbolCallable(ct, "__Z26IsDefaultEmojiPresentationj");
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] IsDefaultEmojiPresentation (Uset) found: %d", IsDefaultEmojiPresentationUSet != NULL);
         %init(EmojiPresentationUSet);

@@ -14,7 +14,7 @@
 %end
 
 %ctor {
-    if (isiOS10Up)
+    if (IS_IOS_OR_NEWER(iOS_10_0))
         return;
     dlopen(realPath2(@"/System/Library/PrivateFrameworks/TextInput.framework/TextInput"), RTLD_LAZY);
     %init;
