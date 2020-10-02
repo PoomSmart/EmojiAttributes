@@ -12,8 +12,8 @@ extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
 
 %group CharacterSet
 
-CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const);
-CFCharacterSetRef (*CreateCharacterSetWithCompressedBitmapRepresentation)(const CFDataRef characterSet);
+CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const) = NULL;
+CFCharacterSetRef (*CreateCharacterSetWithCompressedBitmapRepresentation)(const CFDataRef characterSet) = NULL;
 CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
 %hookf(CFCharacterSetRef, CreateCharacterSetForFont, CFStringRef const fontName) {
     if (CFStringEqual(fontName, CFSTR("AppleColorEmoji")) || CFStringEqual(fontName, CFSTR(".AppleColorEmojiUI"))) {
