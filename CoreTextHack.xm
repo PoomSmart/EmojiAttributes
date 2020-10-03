@@ -82,9 +82,9 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     for (int i = 0; i < presentationCount; ++i)
         uset_add(unicodeSet, presentation[i]);
     uset_freeze(unicodeSet);
-    characterSet = _CFCreateCharacterSetFromUSet(unicodeSet);
-    CFRetain(characterSet);
     if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
+        characterSet = _CFCreateCharacterSetFromUSet(unicodeSet);
+        CFRetain(characterSet);
         IsDefaultEmojiPresentation = (void (*)(void *))_PSFindSymbolCallable(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
         if (IsDefaultEmojiPresentation == NULL)
             IsDefaultEmojiPresentation = (void (*)(void *))_PSFindSymbolCallable(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_128__invokeEPv");
