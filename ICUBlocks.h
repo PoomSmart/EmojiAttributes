@@ -1,4 +1,6 @@
 #include <unicode/utypes.h>
+#include <unicode/utf8.h>
+#include <unicode/uchar.h>
 
 // https://github.com/unicode-org/icu/blob/master/icu4c/source/common/uchar_props_data.h
 

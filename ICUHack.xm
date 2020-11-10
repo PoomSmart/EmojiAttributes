@@ -1,10 +1,6 @@
 #import "PSEmojiData.h"
 #import "ICUBlocks.h"
 
-#include <unicode/utf8.h>
-#include <unicode/uchar.h>
-#include <unicode/utypes.h>
-
 #define UPROPS_BLOCK_MASK 0x0001ff00
 #define UPROPS_BLOCK_SHIFT 8
 
@@ -54,11 +50,17 @@ int binary_search(UChar32 arr[], int l, int r, UChar32 c) {
 }
 
 %hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
+    if (which == UCHAR_EMOJI_MODIFIER) {
+        return binary_search(modifier, 0, modifierCount - 1, c) != -1;
+    }
     if (which == UCHAR_EMOJI_PRESENTATION) {
         return binary_search(presentation, 0, presentationCount - 1, c) != -1;
     }
     if (which == UCHAR_EXTENDED_PICTOGRAPHIC) {
         return binary_search(pictographic, 0, pictographicCount - 1, c) != -1;
+    }
+    if (which == UCHAR_GRAPHEME_EXTEND) {
+        return binary_search(graphme, 0, graphmeCount - 1, c) != -1;
     }
     return %orig(c, which);
 }
