@@ -4,6 +4,11 @@
 #import <version.h>
 #import <unicode/utypes.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/param.h>
+#include <sys/mman.h>
+
 %config(generator=MobileSubstrate)
 
 CF_INLINE bool CFUniCharIsMemberOfBitmap(UTF16Char theChar, const uint8_t *bitmap) {
@@ -376,7 +381,7 @@ static CFRange _CFStringInlineBufferGetComposedRange(CFStringInlineBuffer *buffe
             Boolean isInBitmap = CFUniCharIsMemberOfBitmap(character, bitmap);
             Boolean isTagSequence = __CFStringIsTagSequence(character);
             Boolean behavesLikeCombiningMark = (character == 0xFF9E) || (character == 0xFF9F) || ((character & 0x1FFFF0) == 0xF870 /* variant tag */);
-            if (!isRelevantFitzpatrickModifier && !isInBitmap && ! isTagSequence && !behavesLikeCombiningMark) {
+            if (!isRelevantFitzpatrickModifier && !isInBitmap && !isTagSequence && !behavesLikeCombiningMark) {
                 break;
             }
     
@@ -627,8 +632,8 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
 
     CFRange cluster;
 
-    // Not sure why we still need this code for iOS 9 (and 10 and 11?)
-    if (!isiOS12_1Up && range.location > 1) {
+    // FIXME: Not sure why we still need this code for iOS 9 (and 10 and 11 and 12?)
+    if (range.location > 1) {
         character = CFStringGetCharacterFromInlineBuffer(&stringBuffer, range.location);
 
         if (__CFStringIsFamilySequenceCluster(&stringBuffer, range) || (character == ZERO_WIDTH_JOINER)) {
@@ -682,8 +687,83 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
     return range;
 }
 
+#define __kCFCharacterSetDir "/System/Library/CoreServices"
+
+const char *(*__CFgetenv)(const char *n);
+
+CF_INLINE const char *CFPathRelativeToAppleFrameworksRoot(const char *path, Boolean *allocated) {
+    if (path) {
+        const char *platformRoot = __CFgetenv("APPLE_FRAMEWORKS_ROOT");
+        if (platformRoot) {
+            char *newPath = NULL;
+            asprintf(&newPath, "%s%s", platformRoot, path);
+            if (allocated && newPath) {
+                *allocated = true;
+            }
+            return newPath;
+        }
+    }
+    if (allocated) {
+        *allocated = false;
+    }
+    return path;
+}
+
+CF_INLINE void __CFUniCharCharacterSetPath(char *cpath) {
+    strlcpy(cpath, __kCFCharacterSetDir, MAXPATHLEN);
+}
+
+static bool __CFUniCharLoadBytesFromFile(const char *fileName, const void **bytes, int64_t *fileSize) {
+    struct stat statBuf;
+    int fd = -1;
+
+    if ((fd = open(fileName, O_RDONLY, 0)) < 0) {
+	    return false;
+    }
+    if (fstat(fd, &statBuf) < 0 || (*bytes = mmap(0, statBuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == (void *)-1) {
+        close(fd);
+        return false;
+    }
+    close(fd);
+
+    if (NULL != fileSize) *fileSize = statBuf.st_size;
+
+    return true;
+}
+
+%group UniCharHack
+
+bool (*__CFUniCharLoadFile)(const char *, const void **, int64_t *);
+%hookf(bool, __CFUniCharLoadFile, const char *bitmapName, const void **bytes, int64_t *fileSize) {
+    bool bitmap = strcmp(bitmapName, "__csbitmaps") == 0;
+    bool data = strcmp(bitmapName, "__data") == 0;
+    bool properties = strcmp(bitmapName, "__properties") == 0;
+    if (bitmap || data || properties) {
+        if (bitmap) bitmapName = "/CFCharacterSetBitmaps.bitmap";
+        if (data) bitmapName = "/CFUnicodeData-L.mapping";
+        if (properties) bitmapName = "/CFUniCharPropertyDatabase.data";
+        char cpath[MAXPATHLEN];
+        __CFUniCharCharacterSetPath(cpath);
+        strlcat(cpath, bitmapName, MAXPATHLEN);
+        Boolean needToFree = false;
+        const char *possiblyFrameworkRootedCPath = CFPathRelativeToAppleFrameworksRoot(cpath, &needToFree);
+        bool result = __CFUniCharLoadBytesFromFile(possiblyFrameworkRootedCPath, bytes, fileSize);
+        if (needToFree) free((void *)possiblyFrameworkRootedCPath);
+        return result;
+    }
+    return %orig(bitmapName, bytes, fileSize);
+}
+
+%end
+
 %ctor {
     if (IS_IOS_OR_NEWER(iOS_13_2))
         return;
+    MSImageRef cf = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"));
+    __CFUniCharLoadFile = (bool (*)(const char *, const void **, int64_t *))_PSFindSymbolCallable(cf, "___CFUniCharLoadFile");
+    __CFgetenv = (const char *(*)(const char *))_PSFindSymbolCallable(cf, "___CFgetenv");
+    if (__CFUniCharLoadFile) {
+        %init(UniCharHack);
+    }
     %init;
 }

@@ -50,19 +50,20 @@ int binary_search(UChar32 arr[], int l, int r, UChar32 c) {
 }
 
 %hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
+    UBool r = %orig(c, which);
     if (which == UCHAR_EMOJI_MODIFIER) {
-        return binary_search(modifier, 0, modifierCount - 1, c) != -1;
+        return r ?: binary_search(modifier, 0, modifierCount - 1, c) != -1;
     }
     if (which == UCHAR_EMOJI_PRESENTATION) {
-        return binary_search(presentation, 0, presentationCount - 1, c) != -1;
+        return r ?: binary_search(presentation, 0, presentationCount - 1, c) != -1;
     }
     if (which == UCHAR_EXTENDED_PICTOGRAPHIC) {
-        return binary_search(pictographic, 0, pictographicCount - 1, c) != -1;
+        return r ?: binary_search(pictographic, 0, pictographicCount - 1, c) != -1;
     }
     if (which == UCHAR_GRAPHEME_EXTEND) {
-        return binary_search(graphme, 0, graphmeCount - 1, c) != -1;
+        return r ?: binary_search(graphme, 0, graphmeCount - 1, c) != -1;
     }
-    return %orig(c, which);
+    return r;
 }
 
 static uint32_t u_getUnicodeProperties(UChar32 c, int32_t column) {
