@@ -1,5 +1,6 @@
 #import "PSEmojiData.h"
 #import "ICUBlocks.h"
+#import <version.h>
 
 #define UPROPS_BLOCK_MASK 0x0001ff00
 #define UPROPS_BLOCK_SHIFT 8
@@ -78,5 +79,7 @@ static uint32_t u_getUnicodeProperties(UChar32 c, int32_t column) {
 }
 
 %ctor {
+    if (IS_IOS_OR_NEWER(iOS_14_0))
+        return;
     %init;
 }
