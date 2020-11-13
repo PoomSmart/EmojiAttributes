@@ -1,6 +1,6 @@
+#import "../PS.h"
 #import "PSEmojiData.h"
 #import "ICUBlocks.h"
-#import <version.h>
 
 #define UPROPS_BLOCK_MASK 0x0001ff00
 #define UPROPS_BLOCK_SHIFT 8
@@ -78,8 +78,21 @@ static uint32_t u_getUnicodeProperties(UChar32 c, int32_t column) {
     return (UBlockCode)((u_getUnicodeProperties(c, 0) & UPROPS_BLOCK_MASK) >> UPROPS_BLOCK_SHIFT);
 }
 
+%group isEmoji
+
+%hookf(UBool, u_isEmoji, UChar32 c) {
+    return (u_getUnicodeProperties(c, 2) >> 28) & 1;
+}
+
+%end
+
 %ctor {
     if (IS_IOS_OR_NEWER(iOS_14_0))
         return;
+    MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
+    UBool (*u_isEmoji_p)(UChar32) = (UBool (*)(UChar32))_PSFindSymbolCallable(ref, "_u_isEmoji");;
+    if (u_isEmoji_p) {
+        %init(isEmoji, u_isEmoji = (void *)u_isEmoji_p);
+    }
     %init;
 }
