@@ -53,16 +53,16 @@ int binary_search(UChar32 arr[], int l, int r, UChar32 c) {
 %hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
     UBool r = %orig(c, which);
     if (which == UCHAR_EMOJI_MODIFIER) {
-        return r ?: binary_search(modifier, 0, modifierCount - 1, c) != -1;
+        return r || binary_search(modifier, 0, modifierCount - 1, c) != -1;
     }
     if (which == UCHAR_EMOJI_PRESENTATION) {
-        return r ?: binary_search(presentation, 0, presentationCount - 1, c) != -1;
+        return r || binary_search(presentation, 0, presentationCount - 1, c) != -1;
     }
     if (which == UCHAR_EXTENDED_PICTOGRAPHIC) {
-        return r ?: binary_search(pictographic, 0, pictographicCount - 1, c) != -1;
+        return r || binary_search(pictographic, 0, pictographicCount - 1, c) != -1;
     }
     if (which == UCHAR_GRAPHEME_EXTEND) {
-        return r ?: binary_search(graphme, 0, graphmeCount - 1, c) != -1;
+        return r || binary_search(graphme, 0, graphmeCount - 1, c) != -1;
     }
     return r;
 }
@@ -87,7 +87,7 @@ static uint32_t u_getUnicodeProperties(UChar32 c, int32_t column) {
 %end
 
 %ctor {
-    if (IS_IOS_OR_NEWER(iOS_14_0))
+    if (IS_IOS_OR_NEWER(iOS_13_2))
         return;
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
     UBool (*u_isEmoji_p)(UChar32) = (UBool (*)(UChar32))_PSFindSymbolCallable(ref, "_u_isEmoji");;
