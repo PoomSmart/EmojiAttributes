@@ -1,6 +1,7 @@
 #import "../PS.h"
-#import "PSEmojiData.h"
 #import "ICUBlocks.h"
+
+%config(generator=MobileSubstrate)
 
 #define UPROPS_BLOCK_MASK 0x0001ff00
 #define UPROPS_BLOCK_SHIFT 8
@@ -36,63 +37,59 @@
     (trie)->data[_UTRIE2_INDEX_FROM_CP(trie, asciiOffset, c)]
 #define UTRIE2_GET16(trie, c) _UTRIE2_GET((trie), index, (trie)->indexLength, (c))
 
-%config(generator=MobileSubstrate)
+%group getUnicodeProperties
 
-int binary_search(UChar32 arr[], int l, int r, UChar32 c) {
-    if (r >= l) {
-        int mid = l + (r - l) / 2;
-        if (arr[mid] == c)
-            return mid;
-        if (arr[mid] > c)
-            return binary_search(arr, l, mid - 1, c);
-        return binary_search(arr, mid + 1, r, c);
-    }
-    return -1;
-}
-
-%hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
-    UBool r = %orig(c, which);
-    if (which == UCHAR_EMOJI_MODIFIER) {
-        return r || binary_search(modifier, 0, modifierCount - 1, c) != -1;
-    }
-    if (which == UCHAR_EMOJI_PRESENTATION) {
-        return r || binary_search(presentation, 0, presentationCount - 1, c) != -1;
-    }
-    if (which == UCHAR_EXTENDED_PICTOGRAPHIC) {
-        return r || binary_search(pictographic, 0, pictographicCount - 1, c) != -1;
-    }
-    if (which == UCHAR_GRAPHEME_EXTEND) {
-        return r || binary_search(graphme, 0, graphmeCount - 1, c) != -1;
-    }
-    return r;
-}
-
-static uint32_t u_getUnicodeProperties(UChar32 c, int32_t column) {
+%hookf(uint32_t, u_getUnicodeProperties, UChar32 c, int32_t column) {
     if (column >= propsVectorsColumns)
         return 0;
     uint16_t vecIndex = UTRIE2_GET16(&propsVectorsTrie, c);
     return propsVectors[vecIndex + column];
 }
 
-%hookf(UBlockCode, ublock_getCode, UChar32 c) {
-    return (UBlockCode)((u_getUnicodeProperties(c, 0) & UPROPS_BLOCK_MASK) >> UPROPS_BLOCK_SHIFT);
-}
-
-%group isEmoji
-
-%hookf(UBool, u_isEmoji, UChar32 c) {
-    return (u_getUnicodeProperties(c, 2) >> 28) & 1;
-}
-
 %end
+
+#ifdef __LP64__
+
+typedef unsigned long long addr_t;
+
+static addr_t step64(const uint8_t *buf, addr_t start, size_t length, uint32_t what, uint32_t mask) {
+	addr_t end = start + length;
+	while (start < end) {
+		uint32_t x = *(uint32_t *)(buf + start);
+		if ((x & mask) == what) {
+			return start;
+		}
+		start += 4;
+	}
+	return 0;
+}
+
+static addr_t find_branch64(const uint8_t *buf, addr_t start, size_t length) {
+	return step64(buf, start, length, 0x14000000, 0xFC000000);
+}
+
+static addr_t follow_branch64(const uint8_t *buf, addr_t branch) {
+	long long w;
+	w = *(uint32_t *)(buf + branch) & 0x3FFFFFF;
+	w <<= 64 - 26;
+	w >>= 64 - 26 - 2;
+	return branch + w;
+}
+
+#endif
 
 %ctor {
     if (IS_IOS_OR_NEWER(iOS_13_2))
         return;
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
-    UBool (*u_isEmoji_p)(UChar32) = (UBool (*)(UChar32))_PSFindSymbolCallable(ref, "_u_isEmoji");;
-    if (u_isEmoji_p) {
-        %init(isEmoji, u_isEmoji = (void *)u_isEmoji_p);
-    }
-    %init;
+    const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
+#ifdef __LP64__
+    addr_t branch = find_branch64(p, 0, 16);
+	addr_t branch_offset = follow_branch64(p, branch);
+    void *rp = (void *)((const uint8_t *)p + branch_offset);
+#else
+    void *rp = (void *)((const uint8_t *)p + 0x16);
+#endif
+    uint32_t (*u_getUnicodeProperties_p)(UChar32, int32_t) = (uint32_t (*)(UChar32, int32_t))make_sym_callable(rp);
+    %init(getUnicodeProperties, u_getUnicodeProperties = (void *)u_getUnicodeProperties_p);
 }

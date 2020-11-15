@@ -6,7 +6,7 @@
 %hook NSBundle
 
 - (NSString *)pathForResource:(NSString *)resourceName ofType:(NSString *)resourceType {
-    if (stringEqual(resourceName, @"TIUserDictionaryEmojiCharacterSet") && stringEqual(resourceType, @"bitmap"))
+    if (stringEqual(resourceName, @"TIUserDictionaryEmojiCharacterSet"))
         return %orig(@"emoji", @"bitmap");
     return %orig;
 }

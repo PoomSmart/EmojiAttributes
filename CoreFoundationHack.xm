@@ -9,6 +9,8 @@
 #include <sys/param.h>
 #include <sys/mman.h>
 
+// #define FAMILY_HACK
+
 %config(generator=MobileSubstrate)
 
 CF_INLINE bool CFUniCharIsMemberOfBitmap(UTF16Char theChar, const uint8_t *bitmap) {
@@ -58,6 +60,8 @@ static inline UTF32Char __CFStringGetLongCharacterFromInlineBuffer(CFStringInlin
     return character;
 }
 
+#ifdef FAMILY_HACK
+
 static inline bool __CFStringIsFamilySequenceBaseCharacterHigh(UTF16Char character) {
     return ((character == 0xD83D) || (character == 0xD83E)) ? true : false;
 }
@@ -76,6 +80,8 @@ static inline bool __CFStringIsFamilySequenceCluster(CFStringInlineBuffer *buffe
     }
     return false;
 }
+
+#endif
 
 static inline bool __CFStringIsValidExtendCharacterForPictographicSequence(UTF32Char character) {
     return u_hasBinaryProperty(character, UCHAR_GRAPHEME_EXTEND) || u_hasBinaryProperty(character, UCHAR_EMOJI_MODIFIER);
@@ -632,6 +638,7 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
 
     CFRange cluster;
 
+#ifdef FAMILY_HACK
     // FIXME: Not sure why we still need this code for iOS 9 (and 10 and 11 and 12?)
     if (range.location > 1) {
         character = CFStringGetCharacterFromInlineBuffer(&stringBuffer, range.location);
@@ -657,6 +664,7 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
             }
         }
     }
+#endif
 
     if (__CFStringGetExtendedPictographicSequence(&stringBuffer, length, range.location, &cluster)) {
         CFIndex const rangeEnd = range.location + range.length;

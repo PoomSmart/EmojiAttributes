@@ -500,6 +500,8 @@ static UChar32 presentation[] = {
     0x1fac3, 0x1fad0, 0x1fad1, 0x1fad2, 0x1fad3, 0x1fad4, 0x1fad5, 0x1fad6, 0x1fad7
 };
 
+#ifdef EXTENDED_EMOJI_DATA
+
 // EmojiCategory > -printEmojiUset:UCHAR_GRAPHEME_EXTEND
 #define graphmeCount 2365
 static UChar32 graphme[] = {
@@ -747,5 +749,7 @@ static UChar32 graphme[] = {
 static UChar32 modifier[] = {
     0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff, 0x1f400
 };
+
+#endif
 
 #endif
