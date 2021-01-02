@@ -1,5 +1,6 @@
 #import "../PS.h"
 #import "ICUBlocks.h"
+#import <libundirect.h>
 
 %config(generator=MobileSubstrate)
 
@@ -48,46 +49,15 @@
 
 %end
 
-#ifdef __LP64__
-
-typedef unsigned long long addr_t;
-
-static addr_t step64(const uint8_t *buf, addr_t start, size_t length, uint32_t what, uint32_t mask) {
-	addr_t end = start + length;
-	while (start < end) {
-		uint32_t x = *(uint32_t *)(buf + start);
-		if ((x & mask) == what) {
-			return start;
-		}
-		start += 4;
-	}
-	return 0;
-}
-
-static addr_t find_branch64(const uint8_t *buf, addr_t start, size_t length) {
-	return step64(buf, start, length, 0x14000000, 0xFC000000);
-}
-
-static addr_t follow_branch64(const uint8_t *buf, addr_t branch) {
-	long long w;
-	w = *(uint32_t *)(buf + branch) & 0x3FFFFFF;
-	w <<= 64 - 26;
-	w >>= 64 - 26 - 2;
-	return branch + w;
-}
-
-#endif
-
 %ctor {
-    if (IS_IOS_OR_NEWER(iOS_13_2))
-        return;
+#ifdef __LP64__
+    // Memory of function: 554889E5 31C083FE 020F8F8A 00000081 FFFFD700 00770789 F8C1E805 EB4C81FF FFFF0000 771731C0 81FF00DC 0000B940 0100000F 4DC889F8 C1E805EB 2B81FFFF FF100076 07B8D413 0000EB32 89F8C1E8 0B488D0D CFE61B00 0FB78C41 40100000 89F8C1E8 0583E03F 01C889C0 488D0DB4 E61B000F B7044183 E71F488D 0487488D 0DA2E61B 000FB704 414863CE 4801C148 8D0571D3 1A008B04 885DC3
+    // Unique bytes: 0583E03F 01C889C0 488D0DB4 (offset: 100)
+    // Starting byte: 0x55
+    void *rp = libundirect_find(@"libicucore", (unsigned char[]){0x05, 0x83, 0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0xB4}, 12, 0x55);
+#else
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
     const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
-#ifdef __LP64__
-    addr_t branch = find_branch64(p, 0, 16);
-	addr_t branch_offset = follow_branch64(p, branch);
-    void *rp = (void *)((const uint8_t *)p + branch_offset);
-#else
     void *rp = (void *)((const uint8_t *)p + 0x16);
 #endif
     uint32_t (*u_getUnicodeProperties_p)(UChar32, int32_t) = (uint32_t (*)(UChar32, int32_t))make_sym_callable(rp);
