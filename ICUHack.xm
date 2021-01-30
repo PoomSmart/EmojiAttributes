@@ -2,6 +2,7 @@
 #import "../PS.h"
 #import "PSEmojiData.h"
 #import "ICUBlocks.h"
+#import <libundirect.h>
 
 %config(generator=MobileSubstrate)
 
@@ -46,54 +47,29 @@ static uint32_t u_getUnicodeProperties(UChar32 c, int32_t column) {
     return propsVectors[vecIndex + column];
 }
 
-static int binary_search(UChar32 arr[], int l, int r, UChar32 c) {
-    if (r >= l) {
-        int mid = l + (r - l) / 2;
-        if (arr[mid] == c)
-            return mid;
-        if (arr[mid] > c)
-            return binary_search(arr, l, mid - 1, c);
-        return binary_search(arr, mid + 1, r, c);
-    }
-    return -1;
-}
-
-%hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
-    UBool r = %orig(c, which);
-    if (which == UCHAR_EMOJI_MODIFIER) {
-        return r || binary_search(modifier, 0, modifierCount - 1, c) != -1;
-    }
-    if (which == UCHAR_EMOJI_PRESENTATION) {
-        return r || binary_search(presentation, 0, presentationCount - 1, c) != -1;
-    }
-    if (which == UCHAR_EXTENDED_PICTOGRAPHIC) {
-        return r || binary_search(pictographic, 0, pictographicCount - 1, c) != -1;
-    }
-    if (which == UCHAR_GRAPHEME_EXTEND) {
-        return r || binary_search(graphme, 0, graphmeCount - 1, c) != -1;
-    }
-    return r;
-}
-
-%hookf(UBlockCode, ublock_getCode, UChar32 c) {
-    return (UBlockCode)((u_getUnicodeProperties(c, 0) & UPROPS_BLOCK_MASK) >> UPROPS_BLOCK_SHIFT);
-}
-
-%group isEmoji
-
-%hookf(UBool, u_isEmoji, UChar32 c) {
-    return (u_getUnicodeProperties(c, 2) >> 28) & 1;
-}
-
 %end
 
 %ctor {
-    if (IS_IOS_OR_NEWER(iOS_13_2))
-        return;
+#ifdef __LP64__
+#if TARGET_OS_SIMULATOR
+    // Memory of function: 554889E5 31C083FE 020F8F8A 00000081 FFFFD700 00770789 F8C1E805 EB4C81FF FFFF0000 771731C0 81FF00DC 0000B940 0100000F 4DC889F8 C1E805EB 2B81FFFF FF100076 07B8D413 0000EB32 89F8C1E8 0B488D0D CFE61B00 0FB78C41 40100000 89F8C1E8 0583E03F 01C889C0 488D0DB4 E61B000F B7044183 E71F488D 0487488D 0DA2E61B 000FB704 414863CE 4801C148 8D0571D3 1A008B04 885DC3
+    // Unique bytes: 0583E03F 01C889C0 488D0DB4 (offset: 100)
+    // Starting byte: 0x55
+    void *rp = libundirect_find(@"libicucore", (unsigned char[]){0x05, 0x83, 0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0xB4}, 12, 0x55);
+#else
+    // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0513 08000014 087C1053 68020035 08809B52 1F00086B 08288052 08B19F1A 0815800B 090D00B0 29110F91 28D96878 09100012 2809080B 090D00B0 29110F91 28D96878 0801010B 890C00B0 29A12791 20D968B8 C0035FD6 1F410071 69000054 08548252 F5FFFF17 087C0B13 090D00B0 29110F91 28C5288B 08816079 0A280553 08412A8B 28796878 EAFFFF17
+    // Unique bytes: 3F080071 6D000054 00008052 C0035FD6 (offset: 0)
+    // Starting byte: 0x3F
+    void *rp = libundirect_find(@"libicucore", (unsigned char[]){0x3F, 0x08, 0x00, 0x71, 0x6D, 0x00, 0x00, 0x54, 0x00, 0x00, 0x80, 0x52, 0xC0, 0x03, 0x5F, 0xD6}, 16, 0x3F);
+#endif
+#else
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
-    UBool (*u_isEmoji_p)(UChar32) = (UBool (*)(UChar32))_PSFindSymbolCallable(ref, "_u_isEmoji");;
-    if (u_isEmoji_p) {
-        %init(isEmoji, u_isEmoji = (void *)u_isEmoji_p);
+    const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
+    void *rp = (void *)((const uint8_t *)p + 0x16);
+#endif
+    uint32_t (*u_getUnicodeProperties_p)(UChar32, int32_t) = (uint32_t (*)(UChar32, int32_t))make_sym_callable(rp);
+    HBLogDebug(@"Pointer found %d", u_getUnicodeProperties_p != NULL);
+    if (u_getUnicodeProperties_p) {
+        %init(getUnicodeProperties, u_getUnicodeProperties = (void *)u_getUnicodeProperties_p);
     }
-    %init;
 }

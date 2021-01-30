@@ -9,8 +9,6 @@
 #include <sys/param.h>
 #include <sys/mman.h>
 
-// #define FAMILY_HACK
-
 %config(generator=MobileSubstrate)
 
 CF_INLINE bool CFUniCharIsMemberOfBitmap(UTF16Char theChar, const uint8_t *bitmap) {
@@ -637,34 +635,6 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
     }
 
     CFRange cluster;
-
-#ifdef FAMILY_HACK
-    // FIXME: Not sure why we still need this code for iOS 9 (and 10 and 11 and 12?)
-    if (range.location > 1) {
-        character = CFStringGetCharacterFromInlineBuffer(&stringBuffer, range.location);
-
-        if (__CFStringIsFamilySequenceCluster(&stringBuffer, range) || (character == ZERO_WIDTH_JOINER)) {
-            currentIndex = (character == ZERO_WIDTH_JOINER) ? range.location + 1 : range.location;
-
-            while ((currentIndex > 1) && (ZERO_WIDTH_JOINER == CFStringGetCharacterFromInlineBuffer(&stringBuffer, currentIndex - 1))) {
-                cluster = _CFStringInlineBufferGetComposedRange(&stringBuffer, currentIndex - 2, type, bmpBitmap, csetType);
-
-                if (cluster.location < range.location) {
-                    if (__CFStringIsFamilySequenceCluster(&stringBuffer, cluster)) {
-                        currentIndex = cluster.location;
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            if (currentIndex < range.location) {
-                range.length += range.location - currentIndex;
-                range.location = currentIndex;
-            }
-        }
-    }
-#endif
 
     if (__CFStringGetExtendedPictographicSequence(&stringBuffer, length, range.location, &cluster)) {
         CFIndex const rangeEnd = range.location + range.length;
