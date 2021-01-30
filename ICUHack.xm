@@ -1,4 +1,6 @@
+#define EXTENDED_EMOJI_DATA
 #import "../PS.h"
+#import "PSEmojiData.h"
 #import "ICUBlocks.h"
 #import <libundirect.h>
 
@@ -38,9 +40,7 @@
     (trie)->data[_UTRIE2_INDEX_FROM_CP(trie, asciiOffset, c)]
 #define UTRIE2_GET16(trie, c) _UTRIE2_GET((trie), index, (trie)->indexLength, (c))
 
-%group getUnicodeProperties
-
-%hookf(uint32_t, u_getUnicodeProperties, UChar32 c, int32_t column) {
+static uint32_t u_getUnicodeProperties(UChar32 c, int32_t column) {
     if (column >= propsVectorsColumns)
         return 0;
     uint16_t vecIndex = UTRIE2_GET16(&propsVectorsTrie, c);

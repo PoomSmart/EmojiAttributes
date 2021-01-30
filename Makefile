@@ -2,7 +2,7 @@ PACKAGE_VERSION = 1.4.2
 
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:8.0
-	ARCHS = x86_64 i386
+	ARCHS = x86_64
 else
 	TARGET = iphone:clang:latest:6.0
 endif

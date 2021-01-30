@@ -1,4 +1,5 @@
 #!/bin/bash
+# Unnecessary as of iOS 10
 
 if [ -z $1 ];then
   echo "Runtime version required"
