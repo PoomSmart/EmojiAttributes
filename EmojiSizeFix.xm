@@ -3,6 +3,7 @@
 #import "../PS.h"
 #import "WebCoreSupport/CoreGraphicsSPI.h"
 #import <CoreText/CoreText.h>
+#import <HBLog.h>
 #import <substrate.h>
 
 %config(generator=MobileSubstrate)
@@ -89,7 +90,7 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
             iOSVer = 90;
         else if (IS_IOS_OR_NEWER(iOS_7_0))
             iOSVer = 70;
-        else if (isiOS61Up)
+        else if (NSFoundationVersionNumber >= NSFoundationVersionNumber_iOS_6_1)
             iOSVer = 61;
         else
             iOSVer = 60;

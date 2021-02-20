@@ -72,9 +72,10 @@
     const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
     void *rp = (void *)((const uint8_t *)p + 0x16);
 #endif
-    HBLogDebug(@"Pointer found %d", rp != NULL);
+    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
     if (rp) {
-        uint32_t (*u_getUnicodeProperties_p)(UChar32, int32_t) = (uint32_t (*)(UChar32, int32_t))make_sym_callable(rp);
-        %init(getUnicodeProperties, u_getUnicodeProperties = (void *)u_getUnicodeProperties_p);
+        %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
+    } else {
+        NSCAssert(NO, @"[ICUHack] Fatal: Could not find u_getUnicodeProperties pointer");
     }
 }

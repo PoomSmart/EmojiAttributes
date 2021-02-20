@@ -3,6 +3,7 @@
 #import "CharacterSet.h"
 #import "uset.h"
 #import <substrate.h>
+#import <HBLog.h>
 #import "PSEmojiData.h"
 #include <unicode/utf16.h>
 
@@ -70,7 +71,7 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
 
 %ctor {
     MSImageRef ct = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
-    CreateCharacterSetForFont = (CFCharacterSetRef (*)(CFStringRef const))_PSFindSymbolCallable(ct, "__Z25CreateCharacterSetForFontPK10__CFString");
+    CreateCharacterSetForFont = (CFCharacterSetRef (*)(CFStringRef const))MSFindSymbol(ct, "__Z25CreateCharacterSetForFontPK10__CFString");
     HBLogDebug(@"[CoreTextHack: CharacterSet] CreateCharacterSetForFont found: %d", CreateCharacterSetForFont != NULL);
     XTCopyUncompressedBitmapRepresentation = (CFDataRef (*)(const UInt8 *, CFIndex))_PSFindSymbolCallable(ct, "__Z38XTCopyUncompressedBitmapRepresentationPKhm");
     HBLogDebug(@"[CoreTextHack: CharacterSet] XTCopyUncompressedBitmapRepresentation found: %d", XTCopyUncompressedBitmapRepresentation != NULL);
@@ -85,15 +86,15 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
         characterSet = _CFCreateCharacterSetFromUSet(unicodeSet);
         CFRetain(characterSet);
-        IsDefaultEmojiPresentation = (void (*)(void *))_PSFindSymbolCallable(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
+        IsDefaultEmojiPresentation = (void (*)(void *))MSFindSymbol(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
         if (IsDefaultEmojiPresentation == NULL)
-            IsDefaultEmojiPresentation = (void (*)(void *))_PSFindSymbolCallable(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_128__invokeEPv");
+            IsDefaultEmojiPresentation = (void (*)(void *))MSFindSymbol(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_128__invokeEPv");
         DefaultEmojiPresentationSet = (CFMutableCharacterSetRef (*))_PSFindSymbolReadable(ct, "__ZZL26IsDefaultEmojiPresentationjE28sDefaultEmojiPresentationSet");
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] IsDefaultEmojiPresentation found: %d", IsDefaultEmojiPresentation != NULL);
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] DefaultEmojiPresentationSet found: %d", DefaultEmojiPresentationSet != NULL);
         %init(EmojiPresentation);
     } else if (IS_IOS_OR_NEWER(iOS_12_1)) {
-        IsDefaultEmojiPresentationUSet = (bool (*)(UChar32))_PSFindSymbolCallable(ct, "__Z26IsDefaultEmojiPresentationj");
+        IsDefaultEmojiPresentationUSet = (bool (*)(UChar32))MSFindSymbol(ct, "__Z26IsDefaultEmojiPresentationj");
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] IsDefaultEmojiPresentation (Uset) found: %d", IsDefaultEmojiPresentationUSet != NULL);
         %init(EmojiPresentationUSet);
     }

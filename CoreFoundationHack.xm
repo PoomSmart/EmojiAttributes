@@ -1,4 +1,4 @@
-#import "../PS.h"
+#import "../PSHeader/Misc.h"
 #import "CoreFoundationHack.h"
 #import <substrate.h>
 #import <version.h>
@@ -738,8 +738,8 @@ bool (*__CFUniCharLoadFile)(const char *, const void **, int64_t *);
     if (IS_IOS_OR_NEWER(iOS_13_2))
         return;
     MSImageRef cf = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"));
-    __CFUniCharLoadFile = (bool (*)(const char *, const void **, int64_t *))_PSFindSymbolCallable(cf, "___CFUniCharLoadFile");
-    __CFgetenv = (const char *(*)(const char *))_PSFindSymbolCallable(cf, "___CFgetenv");
+    __CFUniCharLoadFile = (bool (*)(const char *, const void **, int64_t *))MSFindSymbol(cf, "___CFUniCharLoadFile");
+    __CFgetenv = (const char *(*)(const char *))MSFindSymbol(cf, "___CFgetenv");
     if (__CFUniCharLoadFile) {
         %init(UniCharHack);
     }
