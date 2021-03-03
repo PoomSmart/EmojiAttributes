@@ -7,6 +7,8 @@
 #import "PSEmojiData.h"
 #include <unicode/utf16.h>
 
+#define CreateMutableDict(dict) CFDictionaryCreateMutableCopy(kCFAllocatorDefault, CFDictionaryGetCount(dict), dict)
+
 extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
 
 %config(generator=MobileSubstrate)
@@ -38,6 +40,71 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
         return ourSet;
     }
     return %orig(fontName);
+}
+
+%end
+
+static CFMutableDictionaryRef ctFontInfo = NULL;
+
+static CFMutableDictionaryRef getCTFontInfo(CFDictionaryRef dict) {
+    if (ctFontInfo == NULL) {
+        ctFontInfo = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, CFDictionaryGetCount(dict), dict);
+        CFDictionaryRef x = (CFDictionaryRef)CFDictionaryGetValue(ctFontInfo, CFSTR("Attrs"));
+        CFMutableDictionaryRef attrs = CreateMutableDict(x);
+        x = (CFDictionaryRef)CFDictionaryGetValue(attrs, CFSTR("AppleColorEmoji"));
+        CFMutableDictionaryRef ace = CreateMutableDict(x);
+        x = (CFDictionaryRef)CFDictionaryGetValue(ace, CFSTR("NSCTFontTraitsAttribute"));
+        CFMutableDictionaryRef fontTraits = CreateMutableDict(x);
+        SInt32 formatValue = 3;
+        CFNumberRef formatRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &formatValue);
+        CFDictionarySetValue(ace, CFSTR("NSCTFontFormatAttribute"), formatRef);
+        CFRelease(formatRef);
+        CFDictionarySetValue(ace, CFSTR("NSCTFontFeaturesAttribute"), (__bridge CFArrayRef)@[
+            @{
+                @"CTFeatureTypeIdentifier": @(701),
+                @"CTFeatureTypeNameID": @(256),
+                @"CTFeatureTypeSelectors": @[
+                    @{
+                        @"CTFeatureSelectorIdentifier": @(100),
+                        @"CTFeatureSelectorNameID": @(257)
+                    },
+                    @{
+                        @"CTFeatureSelectorIdentifier": @(200),
+                        @"CTFeatureSelectorNameID": @(258)
+                    }
+                ]
+            }
+        ]);
+        CFDictionarySetValue(attrs, CFSTR("AppleColorEmoji"), ace);
+        long long symbolicTraitValue = 3221234688;
+        CFNumberRef symbolicTraitRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberLongLongType, &symbolicTraitValue);
+        CFDictionarySetValue(fontTraits, CFSTR("NSCTFontSymbolicTrait"), symbolicTraitRef);
+        CFRelease(symbolicTraitRef);
+        CFDictionarySetValue(ctFontInfo, CFSTR("Attrs"), attrs);
+    }
+    return ctFontInfo;
+}
+
+%group FontAttributes1
+
+CFDictionaryRef (*CTFontGetPlistFromGSFontCacheB)(CFStringRef, bool);
+%hookf(CFDictionaryRef, CTFontGetPlistFromGSFontCacheB, CFStringRef plist, bool directAccess) {
+    CFDictionaryRef dict = %orig(plist, directAccess);
+    if (CFStringEqual(plist, CFSTR("CTFontInfo.plist")))
+        return getCTFontInfo(dict);
+    return dict;
+}
+
+%end
+
+%group FontAttributes2
+
+CFDictionaryRef (*CTFontGetPlistFromGSFontCache)(CFStringRef);
+%hookf(CFDictionaryRef, CTFontGetPlistFromGSFontCache, CFStringRef plist) {
+    CFDictionaryRef dict = %orig(plist);
+    if (CFStringEqual(plist, CFSTR("CTFontInfo.plist")))
+        return getCTFontInfo(dict);
+    return dict;
 }
 
 %end
@@ -78,6 +145,16 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     CreateCharacterSetWithCompressedBitmapRepresentation = (CFCharacterSetRef (*)(const CFDataRef))_PSFindSymbolCallable(ct, "__Z52CreateCharacterSetWithCompressedBitmapRepresentationPK8__CFData");
     HBLogDebug(@"[CoreTextHack: CharacterSet] CreateCharacterSetWithCompressedBitmapRepresentation found: %d", CreateCharacterSetWithCompressedBitmapRepresentation != NULL);
     %init(CharacterSet);
+    CTFontGetPlistFromGSFontCacheB = (CFDictionaryRef (*)(CFStringRef, bool))MSFindSymbol(ct, "__Z29CTFontGetPlistFromGSFontCachePK10__CFStringb");
+    HBLogDebug(@"[CoreTextHack: FontAttributes] CTFontGetPlistFromGSFontCacheB found: %d", CTFontGetPlistFromGSFontCacheB != NULL);
+    if (CTFontGetPlistFromGSFontCacheB) {
+        %init(FontAttributes1);
+    }
+    CTFontGetPlistFromGSFontCache = (CFDictionaryRef (*)(CFStringRef))MSFindSymbol(ct, "__Z29CTFontGetPlistFromGSFontCachePK10__CFString");
+    HBLogDebug(@"[CoreTextHack: FontAttributes] CTFontGetPlistFromGSFontCache found: %d", CTFontGetPlistFromGSFontCache != NULL);
+    if (CTFontGetPlistFromGSFontCache) {
+        %init(FontAttributes2);
+    }
 #if __LP64__
     unicodeSet = uset_openEmpty();
     for (int i = 0; i < presentationCount; ++i)
@@ -96,7 +173,9 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     } else if (IS_IOS_OR_NEWER(iOS_12_1)) {
         IsDefaultEmojiPresentationUSet = (bool (*)(UChar32))MSFindSymbol(ct, "__Z26IsDefaultEmojiPresentationj");
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] IsDefaultEmojiPresentation (Uset) found: %d", IsDefaultEmojiPresentationUSet != NULL);
-        %init(EmojiPresentationUSet);
+        if (IsDefaultEmojiPresentationUSet) {
+            %init(EmojiPresentationUSet);
+        }
     }
 #endif
 }

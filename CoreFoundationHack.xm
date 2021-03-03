@@ -739,7 +739,7 @@ bool (*__CFUniCharLoadFile)(const char *, const void **, int64_t *);
         return;
     MSImageRef cf = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"));
     __CFUniCharLoadFile = (bool (*)(const char *, const void **, int64_t *))MSFindSymbol(cf, "___CFUniCharLoadFile");
-    __CFgetenv = (const char *(*)(const char *))MSFindSymbol(cf, "___CFgetenv");
+    __CFgetenv = (const char *(*)(const char *))_PSFindSymbolCallable(cf, "___CFgetenv");
     if (__CFUniCharLoadFile) {
         %init(UniCharHack);
     }

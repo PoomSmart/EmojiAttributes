@@ -19,13 +19,13 @@ bool *findIsEmoji(void *arg0) {
 #if __LP64__
     if (iOSVer >= 90)
         return (bool *)((uint8_t *)arg0 + 0x2B);
-    else if (iOSVer >= 70)
+    if (iOSVer >= 70)
         return (bool *)((uint8_t *)arg0 + 0x8);
     return (bool *)((uint8_t *)arg0 + 0xC);
 #else
     if (iOSVer >= 90)
         return (bool *)((uint8_t *)arg0 + 0x1F);
-    else if (iOSVer >= 61)
+    if (iOSVer >= 61)
         return (bool *)((uint8_t *)arg0 + 0x8);
     return (bool *)((uint8_t *)arg0 + 0xC);
 #endif
