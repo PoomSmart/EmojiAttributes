@@ -4,7 +4,7 @@
 #import "ICUBlocks.h"
 #import <HBLog.h>
 #import <theos/IOSMacros.h>
-#import <libundirect.h>
+#import <libundirect/libundirect.h>
 
 %config(generator=MobileSubstrate)
 
