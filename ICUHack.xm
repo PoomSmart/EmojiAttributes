@@ -62,9 +62,9 @@
     // Unique bytes (iOS 12.4): 0583E03F 01C889C0 488D0DB4 (offset: 100)
     // Starting byte (iOS 13.5): 0x31
     // Starting byte (iOS 12.4): 0x55
-    void *rp = libundirect_find(@"libicucore.A", (unsigned char[]){0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0x15, 0xCC, 0x1B}, 12, 0x31);
+    void *rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0x15, 0xCC, 0x1B}, 12, 0x31);
     if (rp == NULL)
-        rp = libundirect_find(@"libicucore.A", (unsigned char[]){0x05, 0x83, 0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0xB4}, 12, 0x55);
+        rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x05, 0x83, 0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0xB4}, 12, 0x55);
 #else
     // From dyld_shared_cache_arm64 (iOS 11.3.1)
     // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0553 13000014 097C1053 E9000035 08809B52 1F00086B 08288052 08B19F1A 0815400B 0B000014 3F410071 69000054 08728252 0C000014 08812011 490D0090 29B11691 28596878 09280553 2801080B 490D0090 29B11691 28596878 09100012 2809088B 490D0090 29B11691 28796878 0801010B A90C00F0 29812B91 20D968B8 C0035FD6
@@ -72,7 +72,7 @@
     // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0513 08000014 087C1053 68020035 08809B52 1F00086B 08288052 08B19F1A 0815800B 090D00B0 29110F91 28D96878 09100012 2809080B 090D00B0 29110F91 28D96878 0801010B 890C00B0 29A12791 20D968B8 C0035FD6 1F410071 69000054 08548252 F5FFFF17 087C0B13 090D00B0 29110F91 28C5288B 08816079 0A280553 08412A8B 28796878 EAFFFF17
     // Unique bytes: 3F080071 6D000054 00008052 C0035FD6 (offset: 0)
     // Starting byte: 0x3F
-    void *rp = libundirect_find(@"libicucore.A", (unsigned char[]){0x3F, 0x08, 0x00, 0x71, 0x6D, 0x00, 0x00, 0x54, 0x00, 0x00, 0x80, 0x52, 0xC0, 0x03, 0x5F, 0xD6}, 16, 0x3F);
+    void *rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x3F, 0x08, 0x00, 0x71, 0x6D, 0x00, 0x00, 0x54, 0x00, 0x00, 0x80, 0x52, 0xC0, 0x03, 0x5F, 0xD6}, 16, 0x3F);
 #endif
 #else
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));

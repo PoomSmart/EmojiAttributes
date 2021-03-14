@@ -1,10 +1,10 @@
-#import "../PS.h"
 #define COMPRESSED_SET
+#import "../PS.h"
 #import "CharacterSet.h"
+#import "PSEmojiData.h"
 #import "uset.h"
 #import <substrate.h>
 #import <HBLog.h>
-#import "PSEmojiData.h"
 #include <unicode/utf16.h>
 
 #define CreateMutableDict(dict) CFDictionaryCreateMutableCopy(kCFAllocatorDefault, CFDictionaryGetCount(dict), dict)
