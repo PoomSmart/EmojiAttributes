@@ -13,7 +13,6 @@ short iOSVer = 0;
 CGFontRef cgFont = NULL;
 
 BOOL (*CTFontIsAppleColorEmoji)(CTFontRef);
-extern "C" bool CGFontGetGlyphAdvancesForStyle(CGFontRef, CGAffineTransform *, CGFontRenderingStyle, const CGGlyph *, size_t, CGSize *);
 
 bool *findIsEmoji(void *arg0) {
 #if __LP64__
@@ -56,6 +55,11 @@ void (*platformInit)(void *);
 
 %group iOS6
 
+int (*CTFontGetWebKitEmojiRenderMode)(void);
+%hookf(int, CTFontGetWebKitEmojiRenderMode) {
+    return 0;
+}
+
 CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderingStyleSubpixelPositioning | kCGFontRenderingStyleSubpixelQuantization | kCGFontAntialiasingStyleUnfiltered;
 
 float (*platformWidthForGlyph)(void *, CGGlyph);
@@ -68,15 +72,8 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         CFRelease(fontName);
     }
     if (isEmojiFont) {
-        CGFloat pointSize = iOSVer >= 70 ? *(CGFloat *)((uint8_t *)arg0 + 0x38) : *(CGFloat *)((uint8_t *)arg0 + 0x34);
         CGSize advance = CGSizeMake(0, 0);
-        CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
-        if (cgFont == NULL) {
-            cgFont = CTFontCopyGraphicsFont(font, NULL);
-            CFRetain(cgFont);
-        }
-        if (!CGFontGetGlyphAdvancesForStyle(cgFont, &m, style, &code, 1, &advance))
-            advance.width = 0;
+        CTFontGetAdvancesForGlyphs(font, kCTFontOrientationHorizontal, &code, &advance, 1);
         return advance.width + 4.0;
     }
     return %orig;
@@ -98,10 +95,12 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
 #if !__LP64__
         MSImageRef ctref = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreText.framework/CoreText"));
         CTFontIsAppleColorEmoji = (BOOL (*)(CTFontRef))MSFindSymbol(ctref, "_CTFontIsAppleColorEmoji");
+        CTFontGetWebKitEmojiRenderMode = (int (*)(void))MSFindSymbol(ctref, "_CTFontGetWebKitEmojiRenderMode");
         platformWidthForGlyph = (float (*)(void *, CGGlyph))MSFindSymbol(wcref, "__ZNK7WebCore4Font21platformWidthForGlyphEt");
         if (platformWidthForGlyph == NULL)
             platformWidthForGlyph = (float (*)(void *, CGGlyph))MSFindSymbol(wcref, "__ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt");
         platformInit = (void (*)(void *))MSFindSymbol(wcref, "__ZN7WebCore14SimpleFontData12platformInitEv");
+        HBLogDebug(@"Found CTFontGetWebKitEmojiRenderMode: %d", CTFontGetWebKitEmojiRenderMode != NULL);
         HBLogDebug(@"Found platformWidthForGlyph: %d", platformWidthForGlyph != NULL);
         HBLogDebug(@"Found platformInit: %d", platformInit != NULL);
         if (iOSVer < 70) {
