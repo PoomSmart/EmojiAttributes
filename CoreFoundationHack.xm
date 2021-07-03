@@ -4,11 +4,6 @@
 #import <version.h>
 #import <unicode/utypes.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <sys/mman.h>
-
 %config(generator=MobileSubstrate)
 
 CF_INLINE bool CFUniCharIsMemberOfBitmap(UTF16Char theChar, const uint8_t *bitmap) {
@@ -57,29 +52,6 @@ static inline UTF32Char __CFStringGetLongCharacterFromInlineBuffer(CFStringInlin
     if (readRange) *readRange = range;
     return character;
 }
-
-#ifdef FAMILY_HACK
-
-static inline bool __CFStringIsFamilySequenceBaseCharacterHigh(UTF16Char character) {
-    return ((character == 0xD83D) || (character == 0xD83E)) ? true : false;
-}
-
-static inline bool __CFStringIsFamilySequenceBaseCharacterLow(UTF16Char character) {
-    return (((character >= 0xDC66) && (character <= 0xDC69)) || (character == 0xDC8B) || (character == 0xDC41) || (character == 0xDDD1) || (character == 0xDDE8)) ? true : false;
-}
-
-static inline bool __CFStringIsFamilySequenceCluster(CFStringInlineBuffer *buffer, CFRange range) {
-    UTF16Char character = CFStringGetCharacterFromInlineBuffer(buffer, range.location);
-    if (character == 0x2764 || character == 0xFE0F || character == 0x2640 || character == 0x2642 || character == 0xD83E || character == 0xDD1D) // HEART or variant selector or gender selector
-        return true;
-    if (range.length > 1) {
-        if (__CFStringIsFamilySequenceBaseCharacterHigh(character) && __CFStringIsFamilySequenceBaseCharacterLow(CFStringGetCharacterFromInlineBuffer(buffer, range.location + 1)))
-            return true;
-    }
-    return false;
-}
-
-#endif
 
 static inline bool __CFStringIsValidExtendCharacterForPictographicSequence(UTF32Char character) {
     return u_hasBinaryProperty(character, UCHAR_GRAPHEME_EXTEND) || u_hasBinaryProperty(character, UCHAR_EMOJI_MODIFIER);
@@ -665,83 +637,8 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
     return range;
 }
 
-#define __kCFCharacterSetDir "/System/Library/CoreServices"
-
-const char *(*__CFgetenv)(const char *n);
-
-CF_INLINE const char *CFPathRelativeToAppleFrameworksRoot(const char *path, Boolean *allocated) {
-    if (path) {
-        const char *platformRoot = __CFgetenv("APPLE_FRAMEWORKS_ROOT");
-        if (platformRoot) {
-            char *newPath = NULL;
-            asprintf(&newPath, "%s%s", platformRoot, path);
-            if (allocated && newPath) {
-                *allocated = true;
-            }
-            return newPath;
-        }
-    }
-    if (allocated) {
-        *allocated = false;
-    }
-    return path;
-}
-
-CF_INLINE void __CFUniCharCharacterSetPath(char *cpath) {
-    strlcpy(cpath, __kCFCharacterSetDir, MAXPATHLEN);
-}
-
-static bool __CFUniCharLoadBytesFromFile(const char *fileName, const void **bytes, int64_t *fileSize) {
-    struct stat statBuf;
-    int fd = -1;
-
-    if ((fd = open(fileName, O_RDONLY, 0)) < 0) {
-	    return false;
-    }
-    if (fstat(fd, &statBuf) < 0 || (*bytes = mmap(0, statBuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == (void *)-1) {
-        close(fd);
-        return false;
-    }
-    close(fd);
-
-    if (NULL != fileSize) *fileSize = statBuf.st_size;
-
-    return true;
-}
-
-%group UniCharHack
-
-bool (*__CFUniCharLoadFile)(const char *, const void **, int64_t *);
-%hookf(bool, __CFUniCharLoadFile, const char *bitmapName, const void **bytes, int64_t *fileSize) {
-    bool bitmap = strcmp(bitmapName, "__csbitmaps") == 0;
-    bool data = strcmp(bitmapName, "__data") == 0;
-    bool properties = strcmp(bitmapName, "__properties") == 0;
-    if (bitmap || data || properties) {
-        if (bitmap) bitmapName = "/CFCharacterSetBitmaps.bitmap";
-        if (data) bitmapName = "/CFUnicodeData-L.mapping";
-        if (properties) bitmapName = "/CFUniCharPropertyDatabase.data";
-        char cpath[MAXPATHLEN];
-        __CFUniCharCharacterSetPath(cpath);
-        strlcat(cpath, bitmapName, MAXPATHLEN);
-        Boolean needToFree = false;
-        const char *possiblyFrameworkRootedCPath = CFPathRelativeToAppleFrameworksRoot(cpath, &needToFree);
-        bool result = __CFUniCharLoadBytesFromFile(possiblyFrameworkRootedCPath, bytes, fileSize);
-        if (needToFree) free((void *)possiblyFrameworkRootedCPath);
-        return result;
-    }
-    return %orig(bitmapName, bytes, fileSize);
-}
-
-%end
-
 %ctor {
     if (IS_IOS_OR_NEWER(iOS_13_2))
         return;
-    MSImageRef cf = MSGetImageByName(realPath2(@"/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"));
-    __CFUniCharLoadFile = (bool (*)(const char *, const void **, int64_t *))MSFindSymbol(cf, "___CFUniCharLoadFile");
-    __CFgetenv = (const char *(*)(const char *))_PSFindSymbolCallable(cf, "___CFgetenv");
-    if (__CFUniCharLoadFile) {
-        %init(UniCharHack);
-    }
     %init;
 }

@@ -64,6 +64,8 @@ CGFontRenderingStyle style = kCGFontRenderingStyleAntialiasing | kCGFontRenderin
 
 float (*platformWidthForGlyph)(void *, CGGlyph);
 %hookf(float, platformWidthForGlyph, void *arg0, CGGlyph code) {
+    if (code == 0xFE0F)
+        return 0.0;
     CTFontRef font = iOSVer >= 70 ? FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x30)) : FontPlatformData_ctFont((void *)((uint8_t *)arg0 + 0x28));
     BOOL isEmojiFont = CTFontIsAppleColorEmoji && CTFontIsAppleColorEmoji(font);
     if (!isEmojiFont) {
