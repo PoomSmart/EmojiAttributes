@@ -6,8 +6,6 @@
 #import <theos/IOSMacros.h>
 #import <libundirect/libundirect.h>
 
-%config(generator=MobileSubstrate)
-
 #define UPROPS_BLOCK_MASK 0x0001ff00
 #define UPROPS_BLOCK_SHIFT 8
 
