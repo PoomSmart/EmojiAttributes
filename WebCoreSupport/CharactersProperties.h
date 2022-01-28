@@ -4,19 +4,18 @@
 namespace WebCore {
 
 static inline bool isEmojiGroupCandidate(UChar32 character) {
-    auto unicodeBlock = ublock_getCode(character);
-    if (unicodeBlock == UBLOCK_MISCELLANEOUS_SYMBOLS
-        || unicodeBlock == UBLOCK_DINGBATS
-        || unicodeBlock == UBLOCK_MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS
-        || unicodeBlock == UBLOCK_EMOTICONS
-        || unicodeBlock == UBLOCK_TRANSPORT_AND_MAP_SYMBOLS)
-        return true;
-#if ICU_HEADERS_UNDERSTAND_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS
-    static bool useSupplementalSymbolsAndPictographs = icuLibraryUnderstandsSupplementalSymbolsAndPictographs();
-    if (useSupplementalSymbolsAndPictographs)
-        return unicodeBlock == UBLOCK_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS;
-#endif
-    return character >= 0x1F900 && character <= 0x1F9FF;
+    switch (static_cast<int>(ublock_getCode(character))) {
+        case UBLOCK_MISCELLANEOUS_SYMBOLS:
+        case UBLOCK_DINGBATS:
+        case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS:
+        case UBLOCK_EMOTICONS:
+        case UBLOCK_TRANSPORT_AND_MAP_SYMBOLS:
+        case UBLOCK_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS:
+        case UBLOCK_SYMBOLS_AND_PICTOGRAPHS_EXTENDED_A:
+            return true;
+        default:
+            return false;
+    }
 }
 
 static inline bool isEmojiFitzpatrickModifier(UChar32 character){
@@ -52,9 +51,17 @@ static inline bool isMark(UChar32 character){
     return U_GET_GC_MASK(character) & U_GC_M_MASK;
 }
 
-static inline bool isEmojiRegionalIndicator(UChar32 character) {
+inline bool isEmojiRegionalIndicator(UChar32 character) {
     return character >= 0x1F1E6 && character <= 0x1F1FF;
 }
+	
+// inline bool isEmojiWithPresentationByDefault(UChar32 character) {
+//     return u_hasBinaryProperty(character, UCHAR_EMOJI_PRESENTATION);
+// }
+
+// inline bool isEmojiModifierBase(UChar32 character) {
+//     return u_hasBinaryProperty(character, UCHAR_EMOJI_MODIFIER_BASE);
+// }
 
 static inline bool isInArmenianToLimbuRange(UChar32 character){
     return character >= 0x0530 && character < 0x1950;
