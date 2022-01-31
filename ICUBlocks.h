@@ -2,7 +2,7 @@
 #include <unicode/utf8.h>
 #include <unicode/uchar.h>
 
-// https://github.com/unicode-org/icu/blob/master/icu4c/source/common/uchar_props_data.h
+// https://github.com/unicode-org/icu/blob/main/icu4c/source/common/uchar_props_data.h
 
 struct UTrie;
 typedef struct UTrie UTrie;

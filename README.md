@@ -22,5 +22,8 @@ This framework does a lot of things to displaying content in websites, including
 ## TextInput (iOS < 10)
 `-[NSString(TIExtras) _containsEmoji]` involves opening the emoji bitmap file `TIUserDictionaryEmojiCharacterSet.bitmap` residing in `/System/Library/Frameworks/TextInput.framework`. It simply needs to be replaced by the most recent bitmap so that such applications that perform checking emoji substrings will perform correctly.
 
+## ICU
+TBD.
+
 ## Emoji Size Fix (iOS 6 - 9)
 Remove WebCore/CoreText emoji size restriction. See [here](https://emojier.com/faq/15122z-ios-small-font-size-emoji-hell).

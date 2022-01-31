@@ -2,9 +2,71 @@
 #import "../PS.h"
 #import "PSEmojiData.h"
 #import "ICUBlocks.h"
-#import <HBLog.h>
+#import "emojiprops.h"
 #import <theos/IOSMacros.h>
 #import <libundirect/libundirect.h>
+
+UDataMemory *memory = nullptr;
+UCPTrie *cpTrie = nullptr;
+
+static void EmojiProps_load(UErrorCode &errorCode) {
+    memory = udata_open("/usr/share/icu/uemoji.dat", "icu", "uemoji", &errorCode);
+    if (U_FAILURE(errorCode)) { return; }
+    const uint8_t *inBytes = (const uint8_t *)udata_getMemory(memory);
+    const int32_t *inIndexes = (const int32_t *)inBytes;
+    int32_t indexesLength = inIndexes[IX_CPTRIE_OFFSET] / 4;
+    if (indexesLength <= IX_RGI_EMOJI_ZWJ_SEQUENCE_TRIE_OFFSET) {
+        errorCode = U_INVALID_FORMAT_ERROR;  // Not enough indexes.
+        return;
+    }
+
+    int32_t i = IX_CPTRIE_OFFSET;
+    int32_t offset = inIndexes[i++];
+    int32_t nextOffset = inIndexes[i];
+    cpTrie = ucptrie_openFromBinary(UCPTRIE_TYPE_FAST, UCPTRIE_VALUE_BITS_8,
+                                    inBytes + offset, nextOffset - offset, nullptr, &errorCode);
+    if (U_FAILURE(errorCode)) {
+        return;
+    }
+
+    // for (i = IX_BASIC_EMOJI_TRIE_OFFSET; i <= IX_RGI_EMOJI_ZWJ_SEQUENCE_TRIE_OFFSET; ++i) {
+    //     offset = inIndexes[i];
+    //     nextOffset = inIndexes[i + 1];
+    //     // Set/leave nullptr if there is no UCharsTrie.
+    //     const UChar *p = nextOffset > offset ? (const UChar *)(inBytes + offset) : nullptr;
+    //     stringTries[getStringTrieIndex(i)] = p;
+    // }
+}
+
+static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
+    if (which < UCHAR_EMOJI || UCHAR_RGI_EMOJI < which) {
+        return false;
+    }
+    // Note: UCHAR_REGIONAL_INDICATOR is a single, hardcoded range implemented elsewhere.
+    static constexpr int8_t bitFlags[] = {
+        BIT_EMOJI,                  // UCHAR_EMOJI=57
+        BIT_EMOJI_PRESENTATION,     // UCHAR_EMOJI_PRESENTATION=58
+        BIT_EMOJI_MODIFIER,         // UCHAR_EMOJI_MODIFIER=59
+        BIT_EMOJI_MODIFIER_BASE,    // UCHAR_EMOJI_MODIFIER_BASE=60
+        BIT_EMOJI_COMPONENT,        // UCHAR_EMOJI_COMPONENT=61
+        -1,                         // UCHAR_REGIONAL_INDICATOR=62
+        -1,                         // UCHAR_PREPENDED_CONCATENATION_MARK=63
+        BIT_EXTENDED_PICTOGRAPHIC,  // UCHAR_EXTENDED_PICTOGRAPHIC=64
+        BIT_BASIC_EMOJI,            // UCHAR_BASIC_EMOJI=65
+        -1,                         // UCHAR_EMOJI_KEYCAP_SEQUENCE=66
+        -1,                         // UCHAR_RGI_EMOJI_MODIFIER_SEQUENCE=67
+        -1,                         // UCHAR_RGI_EMOJI_FLAG_SEQUENCE=68
+        -1,                         // UCHAR_RGI_EMOJI_TAG_SEQUENCE=69
+        -1,                         // UCHAR_RGI_EMOJI_ZWJ_SEQUENCE=70
+        BIT_BASIC_EMOJI,            // UCHAR_RGI_EMOJI=71
+    };
+    int32_t bit = bitFlags[which - UCHAR_EMOJI];
+    if (bit < 0) {
+        return false;  // not a property that we support in this function
+    }
+    uint8_t bits = UCPTRIE_FAST_GET(cpTrie, UCPTRIE_8, c);
+    return (bits >> bit) & 1;
+}
 
 #define UPROPS_BLOCK_MASK 0x0001ff00
 #define UPROPS_BLOCK_SHIFT 8
@@ -51,6 +113,10 @@
 
 %end
 
+%hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
+    return EmojiProps_hasBinaryPropertyImpl(c, which) || %orig;
+}
+
 %ctor {
 #ifdef __LP64__
 #if TARGET_OS_SIMULATOR
@@ -77,10 +143,23 @@
     const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
     void *rp = (void *)((const uint8_t *)p + 0x16);
 #endif
+    UErrorCode errorCode = U_ZERO_ERROR;
+    EmojiProps_load(errorCode);
+    if (U_FAILURE(errorCode)) {
+        // NSCAssert(NO, @"[ICUHack] Fatal: Failed to load uemoji.icu");
+        HBLogInfo(@"[ICUHack] %s", u_errorName(errorCode));
+        return;
+    }
+    %init;
     HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
     if (rp) {
         %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
     } else if (IN_SPRINGBOARD) {
         NSCAssert(NO, @"[ICUHack] Fatal: Could not find u_getUnicodeProperties pointer");
     }
+}
+
+%dtor {
+    udata_close(memory);
+    ucptrie_close(cpTrie);
 }
