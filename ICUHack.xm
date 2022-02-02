@@ -10,7 +10,7 @@ UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
 
 static void EmojiProps_load(UErrorCode &errorCode) {
-    memory = udata_open("/usr/share/icu/uemoji.dat", "icu", "uemoji", &errorCode);
+    memory = udata_open("/Library/Application Support/EmojiAttributes/uemoji.dat", "icu", "uemoji", &errorCode);
     if (U_FAILURE(errorCode)) { return; }
     const uint8_t *inBytes = (const uint8_t *)udata_getMemory(memory);
     const int32_t *inIndexes = (const int32_t *)inBytes;
@@ -113,9 +113,13 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 
 %end
 
+%group hasBinaryProperty
+
 %hookf(UBool, u_hasBinaryProperty, UChar32 c, UProperty which) {
     return EmojiProps_hasBinaryPropertyImpl(c, which) || %orig;
 }
+
+%end
 
 %ctor {
 #ifdef __LP64__
@@ -147,10 +151,9 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     EmojiProps_load(errorCode);
     if (U_FAILURE(errorCode)) {
         // NSCAssert(NO, @"[ICUHack] Fatal: Failed to load uemoji.icu");
-        HBLogInfo(@"[ICUHack] %s", u_errorName(errorCode));
         return;
     }
-    %init;
+    %init(hasBinaryProperty);
     HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
     if (rp) {
         %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
