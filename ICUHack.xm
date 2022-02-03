@@ -10,8 +10,11 @@ UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
 
 static void EmojiProps_load(UErrorCode &errorCode) {
-    memory = udata_open("/Library/Application Support/EmojiAttributes/uemoji.dat", "icu", "uemoji", &errorCode);
-    if (U_FAILURE(errorCode)) { return; }
+    udata_setFileAccess(UDATA_FILES_FIRST, NULL);
+    memory = udata_open("uemoji", "icu", "uemoji", &errorCode);
+    if (U_FAILURE(errorCode)) {
+        return;
+    }
     const uint8_t *inBytes = (const uint8_t *)udata_getMemory(memory);
     const int32_t *inIndexes = (const int32_t *)inBytes;
     int32_t indexesLength = inIndexes[IX_CPTRIE_OFFSET] / 4;
@@ -147,22 +150,26 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
     void *rp = (void *)((const uint8_t *)p + 0x16);
 #endif
-    UErrorCode errorCode = U_ZERO_ERROR;
-    EmojiProps_load(errorCode);
-    if (U_FAILURE(errorCode)) {
-        // NSCAssert(NO, @"[ICUHack] Fatal: Failed to load uemoji.icu");
-        return;
-    }
-    %init(hasBinaryProperty);
-    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
     if (rp) {
         %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
     } else if (IN_SPRINGBOARD) {
         NSCAssert(NO, @"[ICUHack] Fatal: Could not find u_getUnicodeProperties pointer");
     }
+    UErrorCode errorCode = U_ZERO_ERROR;
+    EmojiProps_load(errorCode);
+    if (U_FAILURE(errorCode)) {
+        HBLogDebug(@"[ICUHack] Failed to load uemoji.icu because %s", u_errorName(errorCode));
+        // NSCAssert(NO, @"[ICUHack] Fatal: Failed to load uemoji.icu");
+        return;
+    }
+    HBLogDebug(@"[ICUHack] Successfully open uemoji.icu");
+    %init(hasBinaryProperty);
+    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
 }
 
 %dtor {
-    udata_close(memory);
-    ucptrie_close(cpTrie);
+    if (memory)
+        udata_close(memory);
+    if (cpTrie)
+        ucptrie_close(cpTrie);
 }

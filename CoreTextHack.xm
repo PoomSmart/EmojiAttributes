@@ -22,7 +22,7 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
     if (CFStringEqual(fontName, CFSTR("AppleColorEmoji")) || CFStringEqual(fontName, CFSTR(".AppleColorEmojiUI"))) {
         if (IS_IOS_OR_NEWER(iOS_11_0)) {
             CFDataRef compressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, compressedSet, compressedSetLength, kCFAllocatorNull);
-            if (CreateCharacterSetWithCompressedBitmapRepresentation != NULL) {
+            if (CreateCharacterSetWithCompressedBitmapRepresentation) {
                 CFCharacterSetRef uncompressedSet = CreateCharacterSetWithCompressedBitmapRepresentation(compressedData);
                 CFRelease(compressedData);
                 return uncompressedSet;
