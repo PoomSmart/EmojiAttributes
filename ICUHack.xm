@@ -10,7 +10,6 @@ UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
 
 static void EmojiProps_load(UErrorCode &errorCode) {
-    udata_setFileAccess(UDATA_FILES_FIRST, NULL);
     memory = udata_open("uemoji", "icu", "uemoji", &errorCode);
     if (U_FAILURE(errorCode)) {
         return;
