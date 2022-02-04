@@ -163,7 +163,6 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     }
     HBLogDebug(@"[ICUHack] Successfully open uemoji.icu");
     %init(hasBinaryProperty);
-    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
 }
 
 %dtor {
