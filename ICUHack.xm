@@ -154,7 +154,6 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     } else if (IN_SPRINGBOARD) {
         NSCAssert(NO, @"[ICUHack] Fatal: Could not find u_getUnicodeProperties pointer");
     }
-    %init(hasBinaryProperty);
     UErrorCode errorCode = U_ZERO_ERROR;
     EmojiProps_load(errorCode);
     if (U_FAILURE(errorCode)) {
@@ -162,6 +161,9 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
         // NSCAssert(NO, @"[ICUHack] Fatal: Failed to load uemoji.icu");
         return;
     }
+    HBLogDebug(@"[ICUHack] Successfully open uemoji.icu");
+    %init(hasBinaryProperty);
+    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
 }
 
 %dtor {
