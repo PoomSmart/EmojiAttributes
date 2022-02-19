@@ -177,37 +177,6 @@ typedef enum UCPTrieValueWidth UCPTrieValueWidth;
 #endif
 
 /**
- * Opens a trie from its binary form, stored in 32-bit-aligned memory.
- * Inverse of ucptrie_toBinary().
- *
- * The memory must remain valid and unchanged as long as the trie is used.
- * You must ucptrie_close() the trie once you are done using it.
- *
- * @param type selects the trie type; results in an
- *             U_INVALID_FORMAT_ERROR if it does not match the binary data;
- *             use UCPTRIE_TYPE_ANY to accept any type
- * @param valueWidth selects the number of bits in a data value; results in an
- *                  U_INVALID_FORMAT_ERROR if it does not match the binary data;
- *                  use UCPTRIE_VALUE_BITS_ANY to accept any data value width
- * @param data a pointer to 32-bit-aligned memory containing the binary data of a UCPTrie
- * @param length the number of bytes available at data;
- *               can be more than necessary
- * @param pActualLength receives the actual number of bytes at data taken up by the trie data;
- *                      can be NULL
- * @param pErrorCode an in/out ICU UErrorCode
- * @return the trie
- *
- * @see umutablecptrie_open
- * @see umutablecptrie_buildImmutable
- * @see ucptrie_toBinary
- * @stable ICU 63
- */
-U_CAPI UCPTrie * U_EXPORT2
-ucptrie_openFromBinary(UCPTrieType type, UCPTrieValueWidth valueWidth,
-                       const void *data, int32_t length, int32_t *pActualLength,
-                       UErrorCode *pErrorCode);
-
-/**
  * Closes a trie and releases associated memory.
  *
  * @param trie the trie

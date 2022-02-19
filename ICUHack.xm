@@ -10,9 +10,9 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-extern "C" void *uprv_malloc(size_t s);
-
 #define uprv_memset(buffer, mark, size) U_STANDARD_CPP_NAMESPACE memset(buffer, mark, size)
+
+U_CAPI UCPTrie *(*ucptrie_openFromBinary)(UCPTrieType type, UCPTrieValueWidth valueWidth, const void *data, int32_t length, int32_t *pActualLength, UErrorCode *pErrorCode);
 
 UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
@@ -28,7 +28,7 @@ UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
     if (U_FAILURE(*pErr)) {
         return NULL;
     }
-    This = (UDataMemory *)uprv_malloc(sizeof(UDataMemory));
+    This = (UDataMemory *)malloc(sizeof(UDataMemory));
     if (This == NULL) {
         *pErr = U_MEMORY_ALLOCATION_ERROR; }
     else {
@@ -197,6 +197,7 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 %end
 
 %ctor {
+    MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
 #ifdef __LP64__
 #if TARGET_OS_SIMULATOR
     // Memory of function (iOS 13.5): 31C083FE 020F8F8D 00000055 4889E581 FFFFD700 00770789 F8C1E805 EB4A81FF FFFF0000 771731C0 81FF00DC 0000B940 0100000F 4DC889F8 C1E805EB 29B8D813 000081FF FFFF1000 773289F8 C1E80B48 8D0D30CC 1B000FB7 8C414010 000089F8 C1E80583 E03F01C8 89C0488D 0D15CC1B 000FB704 4183E71F 488D0487 488D0D03 CC1B000F B7044148 63CE4801 C1488D05 D2B11A00 8B04885D C3
@@ -218,7 +219,6 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     void *rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x3F, 0x08, 0x00, 0x71, 0x6D, 0x00, 0x00, 0x54, 0x00, 0x00, 0x80, 0x52, 0xC0, 0x03, 0x5F, 0xD6}, 16, 0x3F);
 #endif
 #else
-    MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
     const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
     void *rp = (void *)((const uint8_t *)p + 0x16);
 #endif
@@ -226,6 +226,8 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     if (rp) {
         %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
     }
+    ucptrie_openFromBinary = (UCPTrie *(*)(UCPTrieType, UCPTrieValueWidth, const void *, int32_t, int32_t *, UErrorCode *))MSFindSymbol(ref, "_ucptrie_openFromBinary");
+    HBLogDebug(@"[ICUHack] ucptrie_openFromBinary found %d", ucptrie_openFromBinary != NULL);
     UErrorCode errorCode = U_ZERO_ERROR;
     EmojiProps_load(errorCode);
     if (U_FAILURE(errorCode)) {
