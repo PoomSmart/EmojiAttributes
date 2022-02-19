@@ -11,8 +11,9 @@
 #include <sys/stat.h>
 
 #define uprv_memset(buffer, mark, size) U_STANDARD_CPP_NAMESPACE memset(buffer, mark, size)
+U_CAPI void * U_EXPORT2 uprv_malloc(size_t s) U_MALLOC_ATTR U_ALLOC_SIZE_ATTR(1);
 
-U_CAPI UCPTrie *(*ucptrie_openFromBinary)(UCPTrieType type, UCPTrieValueWidth valueWidth, const void *data, int32_t length, int32_t *pActualLength, UErrorCode *pErrorCode);
+UCPTrie *(*ucptrie_openFromBinary)(UCPTrieType type, UCPTrieValueWidth valueWidth, const void *data, int32_t length, int32_t *pActualLength, UErrorCode *pErrorCode);
 
 UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
@@ -28,7 +29,7 @@ UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
     if (U_FAILURE(*pErr)) {
         return NULL;
     }
-    This = (UDataMemory *)malloc(sizeof(UDataMemory));
+    This = (UDataMemory *)uprv_malloc(sizeof(UDataMemory));
     if (This == NULL) {
         *pErr = U_MEMORY_ALLOCATION_ERROR; }
     else {
@@ -226,7 +227,7 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     if (rp) {
         %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
     }
-    ucptrie_openFromBinary = (UCPTrie *(*)(UCPTrieType, UCPTrieValueWidth, const void *, int32_t, int32_t *, UErrorCode *))MSFindSymbol(ref, "_ucptrie_openFromBinary");
+    ucptrie_openFromBinary = (UCPTrie *(*)(UCPTrieType, UCPTrieValueWidth, const void *, int32_t, int32_t *, UErrorCode *))_PSFindSymbolCallable(ref, "_ucptrie_openFromBinary");
     HBLogDebug(@"[ICUHack] ucptrie_openFromBinary found %d", ucptrie_openFromBinary != NULL);
     UErrorCode errorCode = U_ZERO_ERROR;
     EmojiProps_load(errorCode);
