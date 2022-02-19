@@ -5,12 +5,83 @@
 #import "emojiprops.h"
 #import <theos/IOSMacros.h>
 #import <libundirect/libundirect.h>
+#import <HBLog.h>
+
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+extern "C" void *uprv_malloc(size_t s);
+
+#define uprv_memset(buffer, mark, size) U_STANDARD_CPP_NAMESPACE memset(buffer, mark, size)
 
 UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
 
+void UDataMemory_init(UDataMemory *This) {
+    uprv_memset(This, 0, sizeof(UDataMemory));
+    This->length=-1;
+}
+
+UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
+    UDataMemory *This;
+
+    if (U_FAILURE(*pErr)) {
+        return NULL;
+    }
+    This = (UDataMemory *)uprv_malloc(sizeof(UDataMemory));
+    if (This == NULL) {
+        *pErr = U_MEMORY_ALLOCATION_ERROR; }
+    else {
+        UDataMemory_init(This);
+        This->heapAllocated = TRUE;
+    }
+    return This;
+}
+
+void udata_open_custom(UErrorCode *status) {
+    static const char *path = "/usr/share/icu/uemoji.icu";
+    int fd;
+    int length;
+    struct stat mystat;
+    void *data;
+
+    memory = UDataMemory_createNewInstance(status);
+    if (U_FAILURE(*status)) {
+        HBLogDebug(@"[ICUHack] udata_open_custom instance failed with error %s", u_errorName(*status));
+        return;
+    }
+
+    UDataMemory_init(memory);
+
+    if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
+        HBLogDebug(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
+        return;
+    }
+    length = mystat.st_size;
+
+    fd = open(path, O_RDONLY);
+    if (fd == -1) {
+        HBLogDebug(@"[ICUHack] udata_open_custom open() failed with error %d", errno);
+        return;
+    }
+
+    data = mmap(0, length, PROT_READ, MAP_SHARED, fd, 0);
+    close(fd);
+    if (data == MAP_FAILED) {
+        HBLogDebug(@"[ICUHack] udata_open_custom mmap() failed");
+        return;
+    }
+
+    memory->map = (char *)data + length;
+    memory->pHeader=(const DataHeader *)data;
+    memory->mapAddr = data;
+#if U_PLATFORM == U_PF_IPHONE
+    posix_madvise(data, length, POSIX_MADV_RANDOM);
+#endif
+}
+
 static void EmojiProps_load(UErrorCode &errorCode) {
-    memory = udata_open("uemoji", "icu", "uemoji", &errorCode);
+    udata_open_custom(&errorCode);
     if (U_FAILURE(errorCode)) {
         return;
     }
@@ -19,6 +90,7 @@ static void EmojiProps_load(UErrorCode &errorCode) {
     int32_t indexesLength = inIndexes[IX_CPTRIE_OFFSET] / 4;
     if (indexesLength <= IX_RGI_EMOJI_ZWJ_SEQUENCE_TRIE_OFFSET) {
         errorCode = U_INVALID_FORMAT_ERROR;  // Not enough indexes.
+        HBLogDebug(@"[ICUHack] EmojiProps_load invalid format error");
         return;
     }
 
@@ -28,6 +100,7 @@ static void EmojiProps_load(UErrorCode &errorCode) {
     cpTrie = ucptrie_openFromBinary(UCPTRIE_TYPE_FAST, UCPTRIE_VALUE_BITS_8,
                                     inBytes + offset, nextOffset - offset, nullptr, &errorCode);
     if (U_FAILURE(errorCode)) {
+        HBLogDebug(@"[ICUHack] ucptrie_openFromBinary failed");
         return;
     }
 
@@ -149,19 +222,16 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
     void *rp = (void *)((const uint8_t *)p + 0x16);
 #endif
+    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
     if (rp) {
         %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
-    } else if (IN_SPRINGBOARD) {
-        NSCAssert(NO, @"[ICUHack] Fatal: Could not find u_getUnicodeProperties pointer");
     }
     UErrorCode errorCode = U_ZERO_ERROR;
     EmojiProps_load(errorCode);
     if (U_FAILURE(errorCode)) {
         HBLogDebug(@"[ICUHack] Failed to load uemoji.icu because %s", u_errorName(errorCode));
-        // NSCAssert(NO, @"[ICUHack] Fatal: Failed to load uemoji.icu");
         return;
     }
-    HBLogDebug(@"[ICUHack] Successfully open uemoji.icu");
     %init(hasBinaryProperty);
 }
 

@@ -9,10 +9,11 @@
 
 #include <unicode/uchar.h>
 #include <unicode/utypes.h>
-#include "unicode/udata.h"
+#include "unicode/udatamem.h"
 #include "unicode/ucptrie.h"
+#include "unicode/ucmndata.h"
 
-UProperty UCHAR_RGI_EMOJI = (UProperty)57; // uchar.h
+UProperty UCHAR_RGI_EMOJI = (UProperty)71; // uchar.h
 
 enum {
     // Byte offsets from the start of the data, after the generic header,

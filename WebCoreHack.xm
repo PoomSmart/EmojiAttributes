@@ -6,6 +6,8 @@
 #import "WebCoreSupport/CoreGraphicsSPI.h"
 #import <CoreText/CoreText.h>
 #import <substrate.h>
+#import <HBLog.h>
+
 #include <unicode/utf16.h>
 
 %config(generator=MobileSubstrate)
