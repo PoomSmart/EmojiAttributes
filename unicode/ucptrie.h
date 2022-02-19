@@ -552,10 +552,6 @@ enum {
 
 /** @internal */
 U_CAPI int32_t U_EXPORT2
-ucptrie_internalSmallIndex(const UCPTrie *trie, UChar32 c);
-
-/** @internal */
-U_CAPI int32_t U_EXPORT2
 ucptrie_internalSmallU8Index(const UCPTrie *trie, int32_t lt1, uint8_t t2, uint8_t t3);
 
 /**

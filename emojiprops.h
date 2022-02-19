@@ -9,9 +9,6 @@
 
 #include <unicode/uchar.h>
 #include <unicode/utypes.h>
-#include "unicode/udatamem.h"
-#include "unicode/ucptrie.h"
-#include "unicode/ucmndata.h"
 
 UProperty UCHAR_RGI_EMOJI = (UProperty)71; // uchar.h
 
