@@ -102,9 +102,9 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         if (platformWidthForGlyph == NULL)
             platformWidthForGlyph = (float (*)(void *, CGGlyph))MSFindSymbol(wcref, "__ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt");
         platformInit = (void (*)(void *))MSFindSymbol(wcref, "__ZN7WebCore14SimpleFontData12platformInitEv");
-        HBLogDebug(@"Found CTFontGetWebKitEmojiRenderMode: %d", CTFontGetWebKitEmojiRenderMode != NULL);
-        HBLogDebug(@"Found platformWidthForGlyph: %d", platformWidthForGlyph != NULL);
-        HBLogDebug(@"Found platformInit: %d", platformInit != NULL);
+        HBLogDebug(@"[EmojiSizeFix] Found CTFontGetWebKitEmojiRenderMode: %d", CTFontGetWebKitEmojiRenderMode != NULL);
+        HBLogDebug(@"[EmojiSizeFix] Found platformWidthForGlyph: %d", platformWidthForGlyph != NULL);
+        HBLogDebug(@"[EmojiSizeFix] Found platformInit: %d", platformInit != NULL);
         if (iOSVer < 70) {
             %init(iOS6);
             if (iOSVer == 60) {
@@ -113,7 +113,7 @@ float (*platformWidthForGlyph)(void *, CGGlyph);
         }
 #endif
         FontPlatformData_ctFont = (CTFontRef (*)(void *))MSFindSymbol(wcref, "__ZNK7WebCore16FontPlatformData6ctFontEv");
-        HBLogDebug(@"Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
+        HBLogDebug(@"[EmojiSizeFix] Found FontPlatformData_ctFont: %d", FontPlatformData_ctFont != NULL);
         %init;
     }
 }

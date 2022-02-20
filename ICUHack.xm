@@ -249,14 +249,6 @@ static void EmojiProps_load(UErrorCode &errorCode) {
         HBLogDebug(@"[ICUHack] ucptrie_openFromBinary failed");
         return;
     }
-
-    // for (i = IX_BASIC_EMOJI_TRIE_OFFSET; i <= IX_RGI_EMOJI_ZWJ_SEQUENCE_TRIE_OFFSET; ++i) {
-    //     offset = inIndexes[i];
-    //     nextOffset = inIndexes[i + 1];
-    //     // Set/leave nullptr if there is no UCharsTrie.
-    //     const UChar *p = nextOffset > offset ? (const UChar *)(inBytes + offset) : nullptr;
-    //     stringTries[getStringTrieIndex(i)] = p;
-    // }
 }
 
 static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
@@ -383,9 +375,9 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     if (ucptrie_close == NULL)
         ucptrie_close = legacy_ucptrie_close;
 #endif
-    HBLogDebug(@"[ICUHack] ucptrie_openFromBinary found %d", ucptrie_openFromBinary != NULL);
-    HBLogDebug(@"[ICUHack] ucptrie_internalSmallIndex found %d", ucptrie_internalSmallIndex != NULL);
-    HBLogDebug(@"[ICUHack] ucptrie_close found %d", ucptrie_close != NULL);
+    HBLogDebug(@"[ICUHack] ucptrie_openFromBinary found: %d", ucptrie_openFromBinary != NULL);
+    HBLogDebug(@"[ICUHack] ucptrie_internalSmallIndex found: %d", ucptrie_internalSmallIndex != NULL);
+    HBLogDebug(@"[ICUHack] ucptrie_close found: %d", ucptrie_close != NULL);
     UErrorCode errorCode = U_ZERO_ERROR;
     EmojiProps_load(errorCode);
     if (U_FAILURE(errorCode)) {

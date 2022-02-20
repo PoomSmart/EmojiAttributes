@@ -52,10 +52,4 @@ enum {
     BIT_BASIC_EMOJI
 };
 
-// static int32_t getStringTrieIndex(int32_t i) {
-//     return i - IX_BASIC_EMOJI_TRIE_OFFSET;
-// }
-
-// const UChar *stringTries[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-
 #endif  // __EMOJIPROPS_H__
