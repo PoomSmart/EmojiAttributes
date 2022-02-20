@@ -177,15 +177,6 @@ typedef enum UCPTrieValueWidth UCPTrieValueWidth;
 #endif
 
 /**
- * Closes a trie and releases associated memory.
- *
- * @param trie the trie
- * @stable ICU 63
- */
-U_CAPI void U_EXPORT2
-ucptrie_close(UCPTrie *trie);
-
-/**
  * Returns the trie type.
  *
  * @param trie the trie

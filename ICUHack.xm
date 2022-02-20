@@ -15,8 +15,10 @@
 #include <sys/stat.h>
 
 #define uprv_memset(buffer, mark, size) U_STANDARD_CPP_NAMESPACE memset(buffer, mark, size)
+U_CAPI void U_EXPORT2 uprv_free(void *mem);
 U_CAPI void * U_EXPORT2 uprv_malloc(size_t s) U_MALLOC_ATTR U_ALLOC_SIZE_ATTR(1);
 
+void (*ucptrie_close)(UCPTrie *trie);
 int32_t (*ucptrie_internalSmallIndex)(const UCPTrie *trie, UChar32 c);
 UCPTrie *(*ucptrie_openFromBinary)(UCPTrieType type, UCPTrieValueWidth valueWidth, const void *data, int32_t length, int32_t *pActualLength, UErrorCode *pErrorCode);
 
@@ -150,6 +152,10 @@ int32_t legacy_ucptrie_internalSmallIndex(const UCPTrie *trie, UChar32 c) {
         dataBlock |= trie->index[i3Block + i3];
     }
     return dataBlock + (c & UCPTRIE_SMALL_DATA_MASK);
+}
+
+void legacy_ucptrie_close(UCPTrie *trie) {
+   uprv_free(trie); 
 }
 
 UDataMemory *memory = nullptr;
@@ -372,6 +378,10 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     if (ucptrie_internalSmallIndex == NULL)
         ucptrie_internalSmallIndex = legacy_ucptrie_internalSmallIndex;
     HBLogDebug(@"[ICUHack] ucptrie_internalSmallIndex found %d", ucptrie_internalSmallIndex != NULL);
+    ucptrie_close = (void (*)(UCPTrie *))_PSFindSymbolCallable(ref, "_ucptrie_close");
+    if (ucptrie_close == NULL)
+        ucptrie_close = legacy_ucptrie_close;
+    HBLogDebug(@"[ICUHack] ucptrie_close found %d", ucptrie_close != NULL);
     UErrorCode errorCode = U_ZERO_ERROR;
     EmojiProps_load(errorCode);
     if (U_FAILURE(errorCode)) {
