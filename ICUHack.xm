@@ -22,7 +22,7 @@ UCPTrie *(*ucptrie_openFromBinary)(UCPTrieType type, UCPTrieValueWidth valueWidt
 
 #if !__arm64e__
 
-UCPTrie *legacy_ucptrie_openFromBinary(UCPTrieType type, UCPTrieValueWidth valueWidth, const void *data, int32_t length, int32_t *pActualLength, UErrorCode *pErrorCode) {
+static UCPTrie *legacy_ucptrie_openFromBinary(UCPTrieType type, UCPTrieValueWidth valueWidth, const void *data, int32_t length, int32_t *pActualLength, UErrorCode *pErrorCode) {
     if (U_FAILURE(*pErrorCode)) {
         return nullptr;
     }
@@ -132,7 +132,7 @@ UCPTrie *legacy_ucptrie_openFromBinary(UCPTrieType type, UCPTrieValueWidth value
     return trie;
 }
 
-int32_t legacy_ucptrie_internalSmallIndex(const UCPTrie *trie, UChar32 c) {
+static int32_t legacy_ucptrie_internalSmallIndex(const UCPTrie *trie, UChar32 c) {
     int32_t i1 = c >> UCPTRIE_SHIFT_1;
     if (trie->type == UCPTRIE_TYPE_FAST) {
         i1 += UCPTRIE_BMP_INDEX_LENGTH - UCPTRIE_OMITTED_BMP_INDEX_1_LENGTH;
@@ -154,7 +154,7 @@ int32_t legacy_ucptrie_internalSmallIndex(const UCPTrie *trie, UChar32 c) {
     return dataBlock + (c & UCPTRIE_SMALL_DATA_MASK);
 }
 
-void legacy_ucptrie_close(UCPTrie *trie) {
+static void legacy_ucptrie_close(UCPTrie *trie) {
    uprv_free(trie); 
 }
 
@@ -163,12 +163,15 @@ void legacy_ucptrie_close(UCPTrie *trie) {
 UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
 
-void UDataMemory_init(UDataMemory *This) {
+BOOL didShowAlert = NO;
+#define DID_SHOW_ALERT_KEY @"did-show-icu-read-error-alert"
+
+static void UDataMemory_init(UDataMemory *This) {
     uprv_memset(This, 0, sizeof(UDataMemory));
     This->length=-1;
 }
 
-UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
+static UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
     UDataMemory *This;
 
     if (U_FAILURE(*pErr)) {
@@ -184,7 +187,7 @@ UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
     return This;
 }
 
-void udata_open_custom(UErrorCode *status) {
+static void udata_open_custom(UErrorCode *status) {
     static const char *path = "/usr/share/icu/uemoji.icu";
     int fd;
     int length;
@@ -200,13 +203,29 @@ void udata_open_custom(UErrorCode *status) {
     UDataMemory_init(memory);
 
     if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
+        *status = U_FILE_ACCESS_ERROR; // custom
         HBLogDebug(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
+        if (!didShowAlert && %c(UIAlertView)) {
+            didShowAlert = YES;
+            NSUserDefaults *defaults = [%c(NSUserDefaults) standardUserDefaults];
+            if (![defaults boolForKey:DID_SHOW_ALERT_KEY]) {
+                [defaults setBool:YES forKey:DID_SHOW_ALERT_KEY];
+                [defaults synchronize];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        UIAlertView *alert = [[%c(UIAlertView) alloc] initWithTitle:@"EmojiAttributes" message:[NSString stringWithFormat:@"Error: Cannot access %s. A jailbreak detection bypass tweak may be blocking it. You can continue using the app but some emojis will not display correcty. This alert will be displayed once.", path] delegate:[%c(UIApplication) sharedApplication] cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                        [alert show];
+                    });
+                });
+            }
+        }
         return;
     }
     length = mystat.st_size;
 
     fd = open(path, O_RDONLY);
     if (fd == -1) {
+        *status = U_FILE_ACCESS_ERROR; // custom
         HBLogDebug(@"[ICUHack] udata_open_custom open() failed with error %d", errno);
         return;
     }
@@ -214,6 +233,7 @@ void udata_open_custom(UErrorCode *status) {
     data = mmap(0, length, PROT_READ, MAP_SHARED, fd, 0);
     close(fd);
     if (data == MAP_FAILED) {
+        *status = U_FILE_ACCESS_ERROR; // custom
         HBLogDebug(@"[ICUHack] udata_open_custom mmap() failed");
         return;
     }
