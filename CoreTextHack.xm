@@ -85,23 +85,6 @@ static CFMutableDictionaryRef getCTFontInfo(CFDictionaryRef dict) {
     return ctFontInfo;
 }
 
-// %group GetJoinerGlyphs
-
-// uint16_t *(*BaseFontGetJoinerGlyphs)(void *);
-// %hookf(uint16_t *, BaseFontGetJoinerGlyphs, void *baseFont) {
-//     uint16_t *glyphs = %orig(baseFont);
-//     void *p = (void *)((uintptr_t)baseFont + 0x110);
-//     const uint16_t *first = (const uint16_t *)p;
-//     const uint16_t *second = (const uint16_t *)((uintptr_t)p + 0x8);
-//     if (first != NULL)
-//         HBLogInfo(@"EmojiAttributes pair first %x", first[0]);
-//     if (second != NULL)
-//         HBLogInfo(@"EmojiAttributes pair second %x", second[0]);
-//     return glyphs;
-// }
-
-// %end
-
 %group FontAttributes1
 
 CFDictionaryRef (*CTFontGetPlistFromGSFontCacheB)(CFStringRef, bool);
@@ -172,11 +155,6 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     if (CTFontGetPlistFromGSFontCache) {
         %init(FontAttributes2);
     }
-    // BaseFontGetJoinerGlyphs = (uint16_t *(*)(void *))_PSFindSymbolReadable(ct, "__ZNK9TBaseFont15GetJoinerGlyphsEv");
-    // HBLogDebug(@"[CoreTextHack: Glyphs] BaseFontGetJoinerGlyphs found: %d", BaseFontGetJoinerGlyphs != NULL);
-    // if (BaseFontGetJoinerGlyphs) {
-    //     %init(GetJoinerGlyphs);
-    // }
 #if __LP64__
     unicodeSet = uset_openEmpty();
     for (int i = 0; i < presentationCount; ++i)

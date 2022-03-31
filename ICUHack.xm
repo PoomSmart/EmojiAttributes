@@ -163,9 +163,6 @@ static void legacy_ucptrie_close(UCPTrie *trie) {
 UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
 
-BOOL didShowAlert = NO;
-#define DID_SHOW_ALERT_KEY @"did-show-icu-read-error-alert"
-
 static void UDataMemory_init(UDataMemory *This) {
     uprv_memset(This, 0, sizeof(UDataMemory));
     This->length=-1;
@@ -188,7 +185,7 @@ static UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
 }
 
 static void udata_open_custom(UErrorCode *status) {
-    static const char *path = "/usr/share/icu/uemoji.icu";
+    static const char *path = "/Library/Application Support/EmojiAttributes/uemoji.icu";
     int fd;
     int length;
     struct stat mystat;
@@ -196,7 +193,7 @@ static void udata_open_custom(UErrorCode *status) {
 
     memory = UDataMemory_createNewInstance(status);
     if (U_FAILURE(*status)) {
-        HBLogDebug(@"[ICUHack] udata_open_custom instance failed with error %s", u_errorName(*status));
+        HBLogError(@"[ICUHack] udata_open_custom instance failed with error %s", u_errorName(*status));
         return;
     }
 
@@ -204,21 +201,7 @@ static void udata_open_custom(UErrorCode *status) {
 
     if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
         *status = U_FILE_ACCESS_ERROR; // custom
-        HBLogDebug(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
-        if (!didShowAlert && %c(UIAlertView)) {
-            didShowAlert = YES;
-            NSUserDefaults *defaults = [%c(NSUserDefaults) standardUserDefaults];
-            if (![defaults boolForKey:DID_SHOW_ALERT_KEY]) {
-                [defaults setBool:YES forKey:DID_SHOW_ALERT_KEY];
-                [defaults synchronize];
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        UIAlertView *alert = [[%c(UIAlertView) alloc] initWithTitle:@"EmojiAttributes" message:[NSString stringWithFormat:@"Error: Cannot access %s. A jailbreak detection bypass tweak may be blocking it. You can continue using the app but some emojis will not display correcty. This alert will be displayed once.", path] delegate:[%c(UIApplication) sharedApplication] cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                        [alert show];
-                    });
-                });
-            }
-        }
+        HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
         return;
     }
     length = mystat.st_size;
@@ -226,7 +209,7 @@ static void udata_open_custom(UErrorCode *status) {
     fd = open(path, O_RDONLY);
     if (fd == -1) {
         *status = U_FILE_ACCESS_ERROR; // custom
-        HBLogDebug(@"[ICUHack] udata_open_custom open() failed with error %d", errno);
+        HBLogError(@"[ICUHack] udata_open_custom open() failed with error %d", errno);
         return;
     }
 
@@ -234,7 +217,7 @@ static void udata_open_custom(UErrorCode *status) {
     close(fd);
     if (data == MAP_FAILED) {
         *status = U_FILE_ACCESS_ERROR; // custom
-        HBLogDebug(@"[ICUHack] udata_open_custom mmap() failed");
+        HBLogError(@"[ICUHack] udata_open_custom mmap() failed");
         return;
     }
 
@@ -256,7 +239,7 @@ static void EmojiProps_load(UErrorCode &errorCode) {
     int32_t indexesLength = inIndexes[IX_CPTRIE_OFFSET] / 4;
     if (indexesLength <= IX_RGI_EMOJI_ZWJ_SEQUENCE_TRIE_OFFSET) {
         errorCode = U_INVALID_FORMAT_ERROR;  // Not enough indexes.
-        HBLogDebug(@"[ICUHack] EmojiProps_load invalid format error");
+        HBLogError(@"[ICUHack] EmojiProps_load invalid format error");
         return;
     }
 
@@ -266,7 +249,7 @@ static void EmojiProps_load(UErrorCode &errorCode) {
     cpTrie = ucptrie_openFromBinary(UCPTRIE_TYPE_FAST, UCPTRIE_VALUE_BITS_8,
                                     inBytes + offset, nextOffset - offset, nullptr, &errorCode);
     if (U_FAILURE(errorCode)) {
-        HBLogDebug(@"[ICUHack] ucptrie_openFromBinary failed");
+        HBLogError(@"[ICUHack] ucptrie_openFromBinary failed");
         return;
     }
 }
@@ -369,9 +352,9 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
         rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x05, 0x83, 0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0xB4}, 12, 0x55);
 #else
     // From dyld_shared_cache_arm64 (iOS 11.3.1)
-    // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0553 13000014 097C1053 E9000035 08809B52 1F00086B 08288052 08B19F1A 0815400B 0B000014 3F410071 69000054 08728252 0C000014 08812011 490D0090 29B11691 28596878 09280553 2801080B 490D0090 29B11691 28596878 09100012 2809088B 490D0090 29B11691 28796878 0801010B A90C00F0 29812B91 20D968B8 C0035FD6
+    // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0553 13000014 ...
     // From pure binary
-    // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0513 08000014 087C1053 68020035 08809B52 1F00086B 08288052 08B19F1A 0815800B 090D00B0 29110F91 28D96878 09100012 2809080B 090D00B0 29110F91 28D96878 0801010B 890C00B0 29A12791 20D968B8 C0035FD6 1F410071 69000054 08548252 F5FFFF17 087C0B13 090D00B0 29110F91 28C5288B 08816079 0A280553 08412A8B 28796878 EAFFFF17
+    // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0513 08000014 ...
     // Unique bytes: 3F080071 6D000054 00008052 C0035FD6 (offset: 0)
     // Starting byte: 0x3F
     void *rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x3F, 0x08, 0x00, 0x71, 0x6D, 0x00, 0x00, 0x54, 0x00, 0x00, 0x80, 0x52, 0xC0, 0x03, 0x5F, 0xD6}, 16, 0x3F);
@@ -394,10 +377,10 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
         ucptrie_internalSmallIndex = legacy_ucptrie_internalSmallIndex;
     if (ucptrie_close == NULL)
         ucptrie_close = legacy_ucptrie_close;
-#endif
     HBLogDebug(@"[ICUHack] ucptrie_openFromBinary found: %d", ucptrie_openFromBinary != NULL);
     HBLogDebug(@"[ICUHack] ucptrie_internalSmallIndex found: %d", ucptrie_internalSmallIndex != NULL);
     HBLogDebug(@"[ICUHack] ucptrie_close found: %d", ucptrie_close != NULL);
+#endif
     UErrorCode errorCode = U_ZERO_ERROR;
     EmojiProps_load(errorCode);
     if (U_FAILURE(errorCode)) {
