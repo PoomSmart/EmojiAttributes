@@ -185,7 +185,9 @@ static UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
 }
 
 static void udata_open_custom(UErrorCode *status) {
-    static const char *path = "/Library/Application Support/EmojiAttributes/uemoji.icu";
+    static const char *path = IS_IOS_OR_NEWER(iOS_15_0)
+        ? "/var/jb/Library/Application Support/EmojiAttributes/uemoji.icu"
+        : "/Library/Application Support/EmojiAttributes/uemoji.icu";
     int fd;
     int length;
     struct stat mystat;
@@ -238,7 +240,7 @@ static void EmojiProps_load(UErrorCode &errorCode) {
     const int32_t *inIndexes = (const int32_t *)inBytes;
     int32_t indexesLength = inIndexes[IX_CPTRIE_OFFSET] / 4;
     if (indexesLength <= IX_RGI_EMOJI_ZWJ_SEQUENCE_TRIE_OFFSET) {
-        errorCode = U_INVALID_FORMAT_ERROR;  // Not enough indexes.
+        errorCode = U_INVALID_FORMAT_ERROR; // Not enough indexes.
         HBLogError(@"[ICUHack] EmojiProps_load invalid format error");
         return;
     }
@@ -253,6 +255,10 @@ static void EmojiProps_load(UErrorCode &errorCode) {
         return;
     }
 }
+
+#ifndef UCHAR_RGI_EMOJI
+#define UCHAR_RGI_EMOJI 71
+#endif
 
 static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     if (which < UCHAR_EMOJI || UCHAR_RGI_EMOJI < which) {
@@ -337,24 +343,34 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 
 %end
 
+%group inlineEmojiData
+
+%hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
+    if (!strcmp(type, "icu") && !strcmp(name, "uemoji")) {
+        udata_open_custom(pErrorCode);
+        return memory;
+    }
+    return %orig;
+}
+
+%end
+
 %ctor {
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
 #ifdef __LP64__
 #if TARGET_OS_SIMULATOR
-    // Memory of function (iOS 13.5): 31C083FE 020F8F8D 00000055 4889E581 FFFFD700 00770789 F8C1E805 EB4A81FF FFFF0000 771731C0 81FF00DC 0000B940 0100000F 4DC889F8 C1E805EB 29B8D813 000081FF FFFF1000 773289F8 C1E80B48 8D0D30CC 1B000FB7 8C414010 000089F8 C1E80583 E03F01C8 89C0488D 0D15CC1B 000FB704 4183E71F 488D0487 488D0D03 CC1B000F B7044148 63CE4801 C1488D05 D2B11A00 8B04885D C3
-    // Memory of function (iOS 12.4): 554889E5 31C083FE 020F8F8A 00000081 FFFFD700 00770789 F8C1E805 EB4C81FF FFFF0000 771731C0 81FF00DC 0000B940 0100000F 4DC889F8 C1E805EB 2B81FFFF FF100076 07B8D413 0000EB32 89F8C1E8 0B488D0D CFE61B00 0FB78C41 40100000 89F8C1E8 0583E03F 01C889C0 488D0DB4 E61B000F B7044183 E71F488D 0487488D 0DA2E61B 000FB704 414863CE 4801C148 8D0571D3 1A008B04 885DC3
     // Unique bytes (iOS 13.5): E03F01C8 89C0488D 0D15CC1B (offset: 100)
     // Unique bytes (iOS 12.4): 0583E03F 01C889C0 488D0DB4 (offset: 100)
+    // Unique bytes (iOS 8.2) : 554889E5 31C083FE 027F5C81 (offset: 0)
     // Starting byte (iOS 13.5): 0x31
     // Starting byte (iOS 12.4): 0x55
+    // Starting byte (iOS 8.2) : 0x55
     void *rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0x15, 0xCC, 0x1B}, 12, 0x31);
     if (rp == NULL)
         rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x05, 0x83, 0xE0, 0x3F, 0x01, 0xC8, 0x89, 0xC0, 0x48, 0x8D, 0x0D, 0xB4}, 12, 0x55);
+    if (rp == NULL)
+        rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x55, 0x48, 0x89, 0xE5, 0x31, 0xC0, 0x83, 0xFE, 0x02, 0x7F, 0x5C, 0x81}, 12, 0x55)
 #else
-    // From dyld_shared_cache_arm64 (iOS 11.3.1)
-    // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0553 13000014 ...
-    // From pure binary
-    // Memory of function: 3F080071 6D000054 00008052 C0035FD6 087C0B53 1F690071 68000054 087C0513 08000014 ...
     // Unique bytes: 3F080071 6D000054 00008052 C0035FD6 (offset: 0)
     // Starting byte: 0x3F
     void *rp = libundirect_find(@"libicucore.A.dylib", (unsigned char[]){0x3F, 0x08, 0x00, 0x71, 0x6D, 0x00, 0x00, 0x54, 0x00, 0x00, 0x80, 0x52, 0xC0, 0x03, 0x5F, 0xD6}, 16, 0x3F);
@@ -387,7 +403,11 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
         HBLogDebug(@"[ICUHack] Failed to load uemoji.icu because %s", u_errorName(errorCode));
         return;
     }
-    %init(hasBinaryProperty);
+    if (IS_IOS_OR_NEWER(iOS_15_4)) {
+        %init(inlineEmojiData);
+    } else {
+        %init(hasBinaryProperty);
+    }
 }
 
 %dtor {
