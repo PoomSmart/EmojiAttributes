@@ -185,9 +185,8 @@ static UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
 }
 
 static void udata_open_custom(UErrorCode *status) {
-    static const char *path = IS_IOS_OR_NEWER(iOS_15_0)
-        ? "/var/jb/Library/Application Support/EmojiAttributes/uemoji.icu"
-        : "/Library/Application Support/EmojiAttributes/uemoji.icu";
+    static const char *defaultPath = "/Library/Application Support/EmojiAttributes/uemoji.icu";
+    static const char *rootlessPath = "/var/LIY/Application Support/EmojiAttributes/uemoji.icu";
     int fd;
     int length;
     struct stat mystat;
@@ -201,10 +200,14 @@ static void udata_open_custom(UErrorCode *status) {
 
     UDataMemory_init(memory);
 
+    const char *path = defaultPath;
     if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
-        *status = U_FILE_ACCESS_ERROR; // custom
-        HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
-        return;
+        path = rootlessPath;
+        if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
+            *status = U_FILE_ACCESS_ERROR; // custom
+            HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
+            return;
+        }
     }
     length = mystat.st_size;
 
@@ -224,7 +227,7 @@ static void udata_open_custom(UErrorCode *status) {
     }
 
     memory->map = (char *)data + length;
-    memory->pHeader=(const DataHeader *)data;
+    memory->pHeader = (const DataHeader *)data;
     memory->mapAddr = data;
 #if U_PLATFORM == U_PF_IPHONE
     posix_madvise(data, length, POSIX_MADV_RANDOM);
