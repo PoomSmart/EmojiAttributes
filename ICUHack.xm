@@ -1,10 +1,10 @@
-#import "../PS.h"
 #import "ICUBlocks.h"
 #import "emojiprops.h"
 #include "unicode/ucptrie_impl.h"
 #include "unicode/ucmndata.h"
 #include "unicode/udatamem.h"
 #include "unicode/cmemory.h"
+#import <PSHeader/PS.h>
 #import <theos/IOSMacros.h>
 #import <libundirect/libundirect.h>
 #import <HBLog.h>
