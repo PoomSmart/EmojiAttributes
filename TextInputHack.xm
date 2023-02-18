@@ -6,8 +6,10 @@
 %hook NSBundle
 
 - (NSString *)pathForResource:(NSString *)resourceName ofType:(NSString *)resourceType {
-    if ([resourceName isEqualToString:@"TIUserDictionaryEmojiCharacterSet"])
-        return %orig(@"emoji", @"bitmap");
+    if ([resourceName isEqualToString:@"TIUserDictionaryEmojiCharacterSet"]) {
+        NSBundle *bundle = [self bundleWithPath:@"/Library/Application Support/EmojiAttributes"];
+        return [bundle pathForResource:@"emoji" ofType:@"bitmap"];
+    }
     return %orig;
 }
 

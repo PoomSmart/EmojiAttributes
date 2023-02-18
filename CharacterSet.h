@@ -1,3 +1,5 @@
+#import <ctype.h>
+
 // EmojiCategory > -readFontCache:YES
 // The bitmap representation of emojis, compressed and uncompressed
 #ifdef COMPRESSED_SET
