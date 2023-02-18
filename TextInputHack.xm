@@ -7,7 +7,7 @@
 
 - (NSString *)pathForResource:(NSString *)resourceName ofType:(NSString *)resourceType {
     if ([resourceName isEqualToString:@"TIUserDictionaryEmojiCharacterSet"]) {
-        NSBundle *bundle = [self bundleWithPath:@"/Library/Application Support/EmojiAttributes"];
+        NSBundle *bundle = [[self class] bundleWithPath:@"/Library/Application Support/EmojiAttributes"];
         return [bundle pathForResource:@"emoji" ofType:@"bitmap"];
     }
     return %orig;
