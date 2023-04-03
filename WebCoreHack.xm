@@ -1,6 +1,6 @@
 #if !__arm64e__
 
-#import "../PS.h"
+#import <PSHeader/PS.h>
 #import "WebCoreSupport/CharactersProperties.h"
 #import "WebCoreSupport/RenderText.h"
 #import "WebCoreSupport/CoreGraphicsSPI.h"

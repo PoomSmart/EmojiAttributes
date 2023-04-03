@@ -1,5 +1,5 @@
 #define COMPRESSED_SET
-#import "../PS.h"
+#import <PSHeader/PS.h>
 #import "CharacterSet.h"
 #import "PSEmojiData.h"
 #import "uset.h"

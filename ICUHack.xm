@@ -160,7 +160,7 @@ static void legacy_ucptrie_close(UCPTrie *trie) {
 
 #endif
 
-UDataMemory *memory = nullptr;
+static UDataMemory *memory = nullptr;
 UCPTrie *cpTrie = nullptr;
 
 static void UDataMemory_init(UDataMemory *This) {
@@ -186,7 +186,8 @@ static UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
 
 static void udata_open_custom(UErrorCode *status) {
     static const char *defaultPath = "/Library/Application Support/EmojiAttributes/uemoji.icu";
-    static const char *rootlessPath = "/var/LIY/Application Support/EmojiAttributes/uemoji.icu";
+    static const char *rootlessPath = "/var/jb/Library/Application Support/EmojiAttributes/uemoji.icu";
+    static const char *xinaPath = "/var/LIY/Application Support/EmojiAttributes/uemoji.icu";
     int fd;
     int length;
     struct stat mystat;
@@ -204,9 +205,12 @@ static void udata_open_custom(UErrorCode *status) {
     if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
         path = rootlessPath;
         if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
-            *status = U_FILE_ACCESS_ERROR; // custom
-            HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
-            return;
+            path = xinaPath;
+            if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
+                *status = U_FILE_ACCESS_ERROR; // custom
+                HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
+                return;
+            }
         }
     }
     length = mystat.st_size;
@@ -330,10 +334,11 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 %group getUnicodeProperties
 
 %hookf(uint32_t, u_getUnicodeProperties, UChar32 c, int32_t column) {
-    if (column >= propsVectorsColumns)
-        return 0;
-    uint16_t vecIndex = UTRIE2_GET16(&propsVectorsTrie, c);
-    return propsVectors[vecIndex + column];
+    // if (column >= propsVectorsColumns)
+    //     return 0;
+    // uint16_t vecIndex = UTRIE2_GET16(&propsVectorsTrie, c);
+    // return propsVectors[vecIndex + column];
+    return %orig;
 }
 
 %end
@@ -346,17 +351,17 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 
 %end
 
-%group inlineEmojiData
+// %group inlineEmojiData
 
-%hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
-    if (!strcmp(type, "icu") && !strcmp(name, "uemoji")) {
-        udata_open_custom(pErrorCode);
-        return memory;
-    }
-    return %orig;
-}
+// %hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
+//     if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0) {
+//         udata_open_custom(pErrorCode);
+//         return memory;
+//     }
+//     return %orig;
+// }
 
-%end
+// %end
 
 %ctor {
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
@@ -400,15 +405,17 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     HBLogDebug(@"[ICUHack] ucptrie_internalSmallIndex found: %d", ucptrie_internalSmallIndex != NULL);
     HBLogDebug(@"[ICUHack] ucptrie_close found: %d", ucptrie_close != NULL);
 #endif
-    UErrorCode errorCode = U_ZERO_ERROR;
-    EmojiProps_load(errorCode);
-    if (U_FAILURE(errorCode)) {
-        HBLogDebug(@"[ICUHack] Failed to load uemoji.icu because %s", u_errorName(errorCode));
-        return;
-    }
     if (IS_IOS_OR_NEWER(iOS_15_4)) {
-        %init(inlineEmojiData);
+        // HBLogDebug(@"[ICUHack] Hooking inline emoji data");
+        // %init(inlineEmojiData);
     } else {
+        UErrorCode errorCode = U_ZERO_ERROR;
+        EmojiProps_load(errorCode);
+        if (U_FAILURE(errorCode)) {
+            HBLogDebug(@"[ICUHack] Failed to load uemoji.icu because %s", u_errorName(errorCode));
+            return;
+        }
+        HBLogDebug(@"[ICUHack] Hooking hasBinaryProperty");
         %init(hasBinaryProperty);
     }
 }
