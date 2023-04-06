@@ -334,11 +334,10 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 %group getUnicodeProperties
 
 %hookf(uint32_t, u_getUnicodeProperties, UChar32 c, int32_t column) {
-    // if (column >= propsVectorsColumns)
-    //     return 0;
-    // uint16_t vecIndex = UTRIE2_GET16(&propsVectorsTrie, c);
-    // return propsVectors[vecIndex + column];
-    return %orig;
+    if (column >= propsVectorsColumns)
+        return 0;
+    uint16_t vecIndex = UTRIE2_GET16(&propsVectorsTrie, c);
+    return propsVectors[vecIndex + column];
 }
 
 %end
@@ -351,19 +350,20 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 
 %end
 
-// %group inlineEmojiData
+%group inlineEmojiData
 
-// %hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
-//     if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0) {
-//         udata_open_custom(pErrorCode);
-//         return memory;
-//     }
-//     return %orig;
-// }
+%hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
+    if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0) {
+        udata_open_custom(pErrorCode);
+        return memory;
+    }
+    return %orig;
+}
 
-// %end
+%end
 
 %ctor {
+    return; // FIXME: Until ElleKit fixes the issues with hooking functions
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
 #ifdef __LP64__
 #if TARGET_OS_SIMULATOR
@@ -406,8 +406,8 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     HBLogDebug(@"[ICUHack] ucptrie_close found: %d", ucptrie_close != NULL);
 #endif
     if (IS_IOS_OR_NEWER(iOS_15_4)) {
-        // HBLogDebug(@"[ICUHack] Hooking inline emoji data");
-        // %init(inlineEmojiData);
+        HBLogDebug(@"[ICUHack] Hooking inline emoji data");
+        %init(inlineEmojiData);
     } else {
         UErrorCode errorCode = U_ZERO_ERROR;
         EmojiProps_load(errorCode);
