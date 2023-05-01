@@ -12,6 +12,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#define UEMOJI_PATH ROOT_PATH("/Library/Application Support/EmojiAttributes/uemoji.icu")
+
 #define uprv_memset(buffer, mark, size) U_STANDARD_CPP_NAMESPACE memset(buffer, mark, size)
 U_CAPI void U_EXPORT2 uprv_free(void *mem);
 U_CAPI void * U_EXPORT2 uprv_malloc(size_t s) U_MALLOC_ATTR U_ALLOC_SIZE_ATTR(1);
@@ -185,8 +187,6 @@ static UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
 }
 
 static void udata_open_custom(UErrorCode *status) {
-    static const char *defaultPath = "/Library/Application Support/EmojiAttributes/uemoji.icu";
-    static const char *rootlessPath = "/var/jb/Library/Application Support/EmojiAttributes/uemoji.icu";
     static const char *xinaPath = "/var/LIY/Application Support/EmojiAttributes/uemoji.icu";
     int fd;
     int length;
@@ -201,16 +201,13 @@ static void udata_open_custom(UErrorCode *status) {
 
     UDataMemory_init(memory);
 
-    const char *path = defaultPath;
+    const char *path = UEMOJI_PATH;
     if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
-        path = rootlessPath;
+        path = xinaPath;
         if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
-            path = xinaPath;
-            if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
-                *status = U_FILE_ACCESS_ERROR; // custom
-                HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
-                return;
-            }
+            *status = U_FILE_ACCESS_ERROR; // custom
+            HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
+            return;
         }
     }
     length = mystat.st_size;
@@ -333,6 +330,7 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 
 %group getUnicodeProperties
 
+uint32_t (*u_getUnicodeProperties)(UChar32, int32_t) = NULL;
 %hookf(uint32_t, u_getUnicodeProperties, UChar32 c, int32_t column) {
     if (column >= propsVectorsColumns)
         return 0;
@@ -352,18 +350,15 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
 
 %group inlineEmojiData
 
-%hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
-    if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0) {
-        udata_open_custom(pErrorCode);
-        return memory;
-    }
-    return %orig;
-}
+// %hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
+//     if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0)
+//         return %orig(ROOT_PATH(UEMOJI_PATH), type, name, isAcceptable, context, pErrorCode);
+//     return %orig;
+// }
 
 %end
 
 %ctor {
-    return; // FIXME: Until ElleKit fixes the issues with hooking functions
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
 #ifdef __LP64__
 #if TARGET_OS_SIMULATOR
@@ -387,28 +382,29 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     const uint8_t *p = (const uint8_t *)MSFindSymbol(ref, "_u_isUAlphabetic");
     void *rp = (void *)((const uint8_t *)p + 0x16);
 #endif
-    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", rp != NULL);
-    if (rp) {
-        %init(getUnicodeProperties, u_getUnicodeProperties = (void *)rp);
+    u_getUnicodeProperties = (uint32_t (*)(UChar32, int32_t))rp;
+    HBLogDebug(@"[ICUHack] u_getUnicodeProperties found %d", u_getUnicodeProperties != NULL);
+    if (u_getUnicodeProperties) {
+        %init(getUnicodeProperties);
     }
-    ucptrie_openFromBinary = (UCPTrie *(*)(UCPTrieType, UCPTrieValueWidth, const void *, int32_t, int32_t *, UErrorCode *))_PSFindSymbolCallable(ref, "_ucptrie_openFromBinary");
-    ucptrie_internalSmallIndex = (int32_t (*)(const UCPTrie *, UChar32))_PSFindSymbolCallable(ref, "_ucptrie_internalSmallIndex");
-    ucptrie_close = (void (*)(UCPTrie *))_PSFindSymbolCallable(ref, "_ucptrie_close");
-#if !__arm64e__
-    if (ucptrie_openFromBinary == NULL)
-        ucptrie_openFromBinary = legacy_ucptrie_openFromBinary;
-    if (ucptrie_internalSmallIndex == NULL)
-        ucptrie_internalSmallIndex = legacy_ucptrie_internalSmallIndex;
-    if (ucptrie_close == NULL)
-        ucptrie_close = legacy_ucptrie_close;
-    HBLogDebug(@"[ICUHack] ucptrie_openFromBinary found: %d", ucptrie_openFromBinary != NULL);
-    HBLogDebug(@"[ICUHack] ucptrie_internalSmallIndex found: %d", ucptrie_internalSmallIndex != NULL);
-    HBLogDebug(@"[ICUHack] ucptrie_close found: %d", ucptrie_close != NULL);
-#endif
     if (IS_IOS_OR_NEWER(iOS_15_4)) {
         HBLogDebug(@"[ICUHack] Hooking inline emoji data");
         %init(inlineEmojiData);
     } else {
+        ucptrie_openFromBinary = (UCPTrie *(*)(UCPTrieType, UCPTrieValueWidth, const void *, int32_t, int32_t *, UErrorCode *))_PSFindSymbolCallable(ref, "_ucptrie_openFromBinary");
+        ucptrie_internalSmallIndex = (int32_t (*)(const UCPTrie *, UChar32))_PSFindSymbolCallable(ref, "_ucptrie_internalSmallIndex");
+        ucptrie_close = (void (*)(UCPTrie *))_PSFindSymbolCallable(ref, "_ucptrie_close");
+#if !__arm64e__
+        if (ucptrie_openFromBinary == NULL)
+            ucptrie_openFromBinary = legacy_ucptrie_openFromBinary;
+        if (ucptrie_internalSmallIndex == NULL)
+            ucptrie_internalSmallIndex = legacy_ucptrie_internalSmallIndex;
+        if (ucptrie_close == NULL)
+            ucptrie_close = legacy_ucptrie_close;
+        HBLogDebug(@"[ICUHack] ucptrie_openFromBinary found: %d", ucptrie_openFromBinary != NULL);
+        HBLogDebug(@"[ICUHack] ucptrie_internalSmallIndex found: %d", ucptrie_internalSmallIndex != NULL);
+        HBLogDebug(@"[ICUHack] ucptrie_close found: %d", ucptrie_close != NULL);
+#endif
         UErrorCode errorCode = U_ZERO_ERROR;
         EmojiProps_load(errorCode);
         if (U_FAILURE(errorCode)) {

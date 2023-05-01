@@ -116,7 +116,7 @@ static CFCharacterSetRef characterSet = NULL;
 
 %group EmojiPresentation
 
-void (*IsDefaultEmojiPresentation)(void *);
+void (*IsDefaultEmojiPresentation)(void *) = NULL;
 CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
 
 %hookf(void, IsDefaultEmojiPresentation, void *arg0) {
@@ -127,7 +127,7 @@ CFMutableCharacterSetRef *DefaultEmojiPresentationSet;
 
 %group EmojiPresentationUSet
 
-bool (*IsDefaultEmojiPresentationUSet)(UChar32);
+bool (*IsDefaultEmojiPresentationUSet)(UChar32) = NULL;
 %hookf(bool, IsDefaultEmojiPresentationUSet, UChar32 c) {
     return uset_contains(unicodeSet, c);
 }
@@ -145,15 +145,17 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
     CreateCharacterSetWithCompressedBitmapRepresentation = (CFCharacterSetRef (*)(const CFDataRef))_PSFindSymbolCallable(ct, "__Z52CreateCharacterSetWithCompressedBitmapRepresentationPK8__CFData");
     HBLogDebug(@"[CoreTextHack: CharacterSet] CreateCharacterSetWithCompressedBitmapRepresentation found: %d", CreateCharacterSetWithCompressedBitmapRepresentation != NULL);
     %init(CharacterSet);
-    CTFontGetPlistFromGSFontCacheB = (CFDictionaryRef (*)(CFStringRef, bool))_PSFindSymbolReadable(ct, "__Z29CTFontGetPlistFromGSFontCachePK10__CFStringb");
-    HBLogDebug(@"[CoreTextHack: FontAttributes] CTFontGetPlistFromGSFontCacheB found: %d", CTFontGetPlistFromGSFontCacheB != NULL);
-    if (CTFontGetPlistFromGSFontCacheB) {
-        %init(FontAttributes1);
-    }
-    CTFontGetPlistFromGSFontCache = (CFDictionaryRef (*)(CFStringRef))_PSFindSymbolReadable(ct, "__Z29CTFontGetPlistFromGSFontCachePK10__CFString");
-    HBLogDebug(@"[CoreTextHack: FontAttributes] CTFontGetPlistFromGSFontCache found: %d", CTFontGetPlistFromGSFontCache != NULL);
-    if (CTFontGetPlistFromGSFontCache) {
-        %init(FontAttributes2);
+    if (!IS_IOS_OR_NEWER(iOS_13_2)) {
+        CTFontGetPlistFromGSFontCacheB = (CFDictionaryRef (*)(CFStringRef, bool))_PSFindSymbolReadable(ct, "__Z29CTFontGetPlistFromGSFontCachePK10__CFStringb");
+        HBLogDebug(@"[CoreTextHack: FontAttributes] CTFontGetPlistFromGSFontCacheB found: %d", CTFontGetPlistFromGSFontCacheB != NULL);
+        if (CTFontGetPlistFromGSFontCacheB) {
+            %init(FontAttributes1);
+        }
+        CTFontGetPlistFromGSFontCache = (CFDictionaryRef (*)(CFStringRef))_PSFindSymbolReadable(ct, "__Z29CTFontGetPlistFromGSFontCachePK10__CFString");
+        HBLogDebug(@"[CoreTextHack: FontAttributes] CTFontGetPlistFromGSFontCache found: %d", CTFontGetPlistFromGSFontCache != NULL);
+        if (CTFontGetPlistFromGSFontCache) {
+            %init(FontAttributes2);
+        }
     }
 #if __LP64__
     unicodeSet = uset_openEmpty();
@@ -170,7 +172,7 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32);
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] IsDefaultEmojiPresentation found: %d", IsDefaultEmojiPresentation != NULL);
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] DefaultEmojiPresentationSet found: %d", DefaultEmojiPresentationSet != NULL);
         %init(EmojiPresentation);
-    } else if (IS_IOS_OR_NEWER(iOS_12_1)) {
+    } else if (IS_IOS_BETWEEN_EEX(iOS_12_1, iOS_15_4)) {
         IsDefaultEmojiPresentationUSet = (bool (*)(UChar32))_PSFindSymbolReadable(ct, "__Z26IsDefaultEmojiPresentationj");
         HBLogDebug(@"[CoreTextHack: EmojiPresentation] IsDefaultEmojiPresentation (Uset) found: %d", IsDefaultEmojiPresentationUSet != NULL);
         if (IsDefaultEmojiPresentationUSet) {
