@@ -766,12 +766,6 @@ static UChar32 graphme[] = {
     0xe01e7, 0xe01e8, 0xe01e9, 0xe01ea, 0xe01eb, 0xe01ec, 0xe01ed, 0xe01ee, 0xe01ef, 0xe01f0
 };
 
-// EmojiCategory > -printEmojiUset:UCHAR_EMOJI_MODIFIER
-#define modifierCount 6
-static UChar32 modifier[] = {
-    0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff, 0x1f400
-};
-
 #endif
 
 #endif
