@@ -1,10 +1,10 @@
 #if !__arm64e__
 
 #import <PSHeader/PS.h>
-#import "WebCoreSupport/CoreGraphicsSPI.h"
 #import <CoreText/CoreText.h>
 #import <HBLog.h>
 #import <substrate.h>
+#import "WebCoreSupport/CoreGraphicsSPI.h"
 
 %config(generator=MobileSubstrate)
 

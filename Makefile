@@ -1,13 +1,13 @@
-PACKAGE_VERSION = 1.7.1
+PACKAGE_VERSION = 1.8.0~b1
 
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:8.0
 	ARCHS = x86_64
 else
 	ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
-		TARGET = iphone:clang:15.5:14.0
+		TARGET = iphone:clang:latest:14.0
 	else
-		TARGET = iphone:clang:15.5:5.0
+		TARGET = iphone:clang:latest:5.0
 	endif
 endif
 
