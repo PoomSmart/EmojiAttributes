@@ -15,10 +15,10 @@ include $(THEOS)/makefiles/common.mk
 
 LIBRARY_NAME = EmojiAttributes
 $(LIBRARY_NAME)_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries/EmojiPort
-$(LIBRARY_NAME)_FILES = ICUHack.xm TextInputHack.xm CoreTextHack.xm WebCoreHack.xm CoreFoundationHack.xm EmojiSizeFix.xm
+$(LIBRARY_NAME)_FILES = TextInputHack.xm CoreTextHack.xm WebCoreHack.xm CoreFoundationHack.xm EmojiSizeFix.xm
 $(LIBRARY_NAME)_CCFLAGS = -std=c++11 -stdlib=libc++
 $(LIBRARY_NAME)_EXTRA_FRAMEWORKS = CydiaSubstrate
-$(LIBRARY_NAME)_LIBRARIES = icucore undirect
+$(LIBRARY_NAME)_LIBRARIES = undirect
 $(LIBRARY_NAME)_USE_SUBSTRATE = 1
 $(LIBRARY_NAME)_GENERATOR = MobileSubstrate
 

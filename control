@@ -1,7 +1,9 @@
-Package: com.ps.emojiattributes
-Name: EmojiAttributes
+Package: com.ps.emojiattributes-meowbrek
+Name: EmojiAttributes (meowbrek)
 Depends: firmware (>= 5.1), mobilesubstrate, com.opa334.libundirect (>= 1.0)
-Conflicts: com.ps.flexmoji
+Conflicts: com.ps.flexmoji, com.ps.emojiattributes
+Replaces: com.ps.emojiattributes
+Provides: com.ps.emojiattributes
 Version: 1.0.0
 Architecture: iphoneos-arm
 Description: Various under-the-hood fixes for emoji display.
