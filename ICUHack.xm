@@ -357,15 +357,17 @@ UBool (*soft_u_stringHasBinaryProperty)(const UChar *, int32_t, UProperty) = NUL
 
 %end
 
-// %group inlineEmojiData
+%group inlineEmojiData
 
-// %hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
-//     if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0)
-//         return %orig(UEMOJI_PATH, type, name, isAcceptable, context, pErrorCode);
-//     return %orig;
-// }
+%hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
+    if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0) {
+        udata_open_custom(pErrorCode);
+        return memory;
+    }
+    return %orig;
+}
 
-// %end
+%end
 
 %ctor {
     MSImageRef ref = MSGetImageByName(realPath2(@"/usr/lib/libicucore.A.dylib"));
@@ -396,10 +398,10 @@ UBool (*soft_u_stringHasBinaryProperty)(const UChar *, int32_t, UProperty) = NUL
     if (u_getUnicodeProperties) {
         %init(getUnicodeProperties);
     }
-    // if (IS_IOS_OR_NEWER(iOS_15_4)) {
-    //     HBLogDebug(@"[ICUHack] Hooking inline emoji data");
-    //     %init(inlineEmojiData);
-    // } else {
+    if (IS_IOS_OR_NEWER(iOS_15_4)) {
+        HBLogDebug(@"[ICUHack] Hooking inline emoji data");
+        %init(inlineEmojiData);
+    } else {
         ucptrie_openFromBinary = (UCPTrie *(*)(UCPTrieType, UCPTrieValueWidth, const void *, int32_t, int32_t *, UErrorCode *))_PSFindSymbolCallable(ref, "_ucptrie_openFromBinary");
         ucptrie_internalSmallIndex = (int32_t (*)(const UCPTrie *, UChar32))_PSFindSymbolCallable(ref, "_ucptrie_internalSmallIndex");
         ucptrie_close = (void (*)(UCPTrie *))_PSFindSymbolCallable(ref, "_ucptrie_close");
@@ -427,7 +429,7 @@ UBool (*soft_u_stringHasBinaryProperty)(const UChar *, int32_t, UProperty) = NUL
             HBLogDebug(@"[ICUHack] Hooking stringHasBinaryProperty");
             %init(stringHasBinaryProperty);
         }
-    // }
+    }
 }
 
 %dtor {
