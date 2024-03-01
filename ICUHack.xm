@@ -344,15 +344,6 @@ uint32_t (*u_getUnicodeProperties)(UChar32, int32_t) = NULL;
 
 %end
 
-%group stringHasBinaryProperty
-
-UBool (*soft_u_stringHasBinaryProperty)(const UChar *, int32_t, UProperty) = NULL;
-%hookf(UBool, soft_u_stringHasBinaryProperty, UChar32 c, UProperty which) {
-    return %orig || EmojiProps_hasBinaryPropertyImpl(c, which);
-}
-
-%end
-
 %group inlineEmojiData
 
 %hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
@@ -418,11 +409,6 @@ UBool (*soft_u_stringHasBinaryProperty)(const UChar *, int32_t, UProperty) = NUL
         }
         HBLogDebug(@"[ICUHack] Hooking hasBinaryProperty");
         %init(hasBinaryProperty);
-        if (IS_IOS_OR_NEWER(iOS_15_4)) {
-            soft_u_stringHasBinaryProperty = (UBool (*)(const UChar *, int32_t, UProperty))MSFindSymbol(ref, "_u_stringHasBinaryProperty");
-            HBLogDebug(@"[ICUHack] Hooking stringHasBinaryProperty");
-            %init(stringHasBinaryProperty);
-        }
     }
 }
 
