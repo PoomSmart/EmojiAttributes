@@ -155,7 +155,7 @@ static int32_t legacy_ucptrie_internalSmallIndex(const UCPTrie *trie, UChar32 c)
 }
 
 static void legacy_ucptrie_close(UCPTrie *trie) {
-   uprv_free(trie); 
+    uprv_free(trie); 
 }
 
 static UDataMemory *memory = nullptr;
