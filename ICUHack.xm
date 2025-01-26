@@ -12,7 +12,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#define UEMOJI_PATH ROOT_PATH("/Library/Application Support/EmojiAttributes/uemoji.icu")
+#define UEMOJI_PATH PS_ROOT_PATH("/Library/Application Support/EmojiAttributes/uemoji.icu")
 
 #define uprv_memset(buffer, mark, size) U_STANDARD_CPP_NAMESPACE memset(buffer, mark, size)
 U_CAPI void U_EXPORT2 uprv_free(void *mem);
