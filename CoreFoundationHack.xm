@@ -582,6 +582,15 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
             otherIndex = currentIndex + __CFTranscodingHintLength[(character - 0xF860)] + 1;
             if (otherIndex >= (range.location + range.length)) {
                 if (otherIndex <= length) {
+                    for (CFIndex checkIndex = currentIndex + 1; checkIndex < otherIndex;) {
+                        CFRange checkRange = _CFStringInlineBufferGetComposedRange(&stringBuffer, checkIndex, type, bmpBitmap, csetType);
+                        checkIndex = checkRange.location + checkRange.length;
+
+                        if (checkIndex > otherIndex) {
+                            otherIndex = checkRange.location;
+                            break;
+                        }
+                    }
                     range.location = currentIndex;
                     range.length = otherIndex - currentIndex;
                 }
@@ -638,7 +647,7 @@ extern "C" CFRange CFStringGetRangeOfCharacterClusterAtIndex(CFStringRef, CFInde
 }
 
 %ctor {
-    if (IS_IOS_OR_NEWER(iOS_13_2))
+    if (IS_IOS_OR_NEWER(iOS_15_0))
         return;
     %init;
 }

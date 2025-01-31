@@ -1,6 +1,6 @@
 Package: com.ps.emojiattributes
 Name: EmojiAttributes
-Depends: firmware (>= 5.1), mobilesubstrate, com.opa334.libundirect (>= 1.0)
+Depends: firmware (>= 5.1), mobilesubstrate, com.opa334.libundirect (>= 1.1.6)
 Conflicts: com.ps.flexmoji
 Version: 1.0.0
 Architecture: iphoneos-arm

@@ -10,9 +10,6 @@
 #include <unicode/uchar.h>
 #include <unicode/utypes.h>
 
-// Uncomment this line if you are not using iOS 15.4+ SDK
-// UProperty UCHAR_RGI_EMOJI = (UProperty)71; // uchar.h
-
 enum {
     // Byte offsets from the start of the data, after the generic header,
     // in ascending order.
