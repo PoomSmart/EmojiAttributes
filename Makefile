@@ -1,4 +1,4 @@
-PACKAGE_VERSION = 1.9.0~b1
+PACKAGE_VERSION = 1.9.0~b2
 
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:8.0
@@ -18,7 +18,10 @@ include $(THEOS)/makefiles/common.mk
 
 LIBRARY_NAME = EmojiAttributes
 $(LIBRARY_NAME)_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries/EmojiPort
-$(LIBRARY_NAME)_FILES = ICUHack.xm TextInputHack.xm CoreTextHack.xm WebCoreHack.xm CoreFoundationHack.xm EmojiSizeFix.xm
+$(LIBRARY_NAME)_FILES = ICUHack.xm CoreTextHack.xm
+ifeq ($(THEOS_PACKAGE_SCHEME),)
+$(LIBRARY_NAME)_FILES += CoreFoundationHack.xm TextInputHack.xm WebCoreHack.xm EmojiSizeFix.xm
+endif
 $(LIBRARY_NAME)_CCFLAGS = -std=c++11 -stdlib=libc++
 $(LIBRARY_NAME)_EXTRA_FRAMEWORKS = CydiaSubstrate
 $(LIBRARY_NAME)_LIBRARIES = icucore undirect
