@@ -15,6 +15,14 @@ extern "C" CFCharacterSetRef _CFCreateCharacterSetFromUSet(USet *);
 
 %group CharacterSet
 
+static CFCharacterSetRef withExtraCharacters(CFCharacterSetRef characterSet) {
+    CFMutableCharacterSetRef mutableCharacterSet = CFCharacterSetCreateMutableCopy(kCFAllocatorDefault, characterSet);
+    CFCharacterSetAddCharactersInString(mutableCharacterSet, CFSTR("🫩🫆🫟🫜🪾🪉🪏🇨🇶"));
+    CFCharacterSetRef ourSet = CFCharacterSetCreateCopy(kCFAllocatorDefault, mutableCharacterSet);
+    CFRelease(mutableCharacterSet);
+    return ourSet;
+}
+
 CFCharacterSetRef (*CreateCharacterSetForFont)(CFStringRef const) = NULL;
 CFCharacterSetRef (*CreateCharacterSetWithCompressedBitmapRepresentation)(const CFDataRef characterSet) = NULL;
 CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
@@ -25,19 +33,19 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
             if (CreateCharacterSetWithCompressedBitmapRepresentation) {
                 CFCharacterSetRef uncompressedSet = CreateCharacterSetWithCompressedBitmapRepresentation(compressedData);
                 CFRelease(compressedData);
-                return uncompressedSet;
+                return withExtraCharacters(uncompressedSet);
             }
             CFDataRef uncompressedData = XTCopyUncompressedBitmapRepresentation(CFDataGetBytePtr(compressedData), CFDataGetLength(compressedData));
             CFRelease(compressedData);
             if (uncompressedData) {
                 CFCharacterSetRef ourSet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, uncompressedData);
                 CFRelease(uncompressedData);
-                return ourSet;
+                return withExtraCharacters(ourSet);
             }
         }
         CFDataRef uncompressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, uncompressedSet, uncompressedSetLength, kCFAllocatorNull);
         CFCharacterSetRef ourSet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, uncompressedData);
-        return ourSet;
+        return withExtraCharacters(ourSet);
     }
     return %orig(fontName);
 }
