@@ -290,9 +290,6 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
     return (bits >> bit) & 1;
 }
 
-#define UPROPS_BLOCK_MASK 0x0001ff00
-#define UPROPS_BLOCK_SHIFT 8
-
 #define _UTRIE2_INDEX_FROM_SUPP(trieIndex, c) \
     (((int32_t)((trieIndex)[ \
         (trieIndex)[(UTRIE2_INDEX_1_OFFSET-UTRIE2_OMITTED_BMP_INDEX_1_LENGTH)+ \
@@ -300,26 +297,22 @@ static UBool EmojiProps_hasBinaryPropertyImpl(UChar32 c, UProperty which) {
         (((c)>>UTRIE2_SHIFT_2)&UTRIE2_INDEX_2_MASK)]) \
     <<UTRIE2_INDEX_SHIFT)+ \
     ((c)&UTRIE2_DATA_MASK))
-#define _UTRIE2_GET_FROM_SUPP(trie, data, c) \
-    (trie)->data[(c)>=(trie)->highStart ? (trie)->highValueIndex : \
-                 _UTRIE2_INDEX_FROM_SUPP((trie)->index, c)]
-#define UTRIE2_GET16_FROM_SUPP(trie, c) _UTRIE2_GET_FROM_SUPP((trie), index, c)
 #define _UTRIE2_INDEX_RAW(offset, trieIndex, c) \
     (((int32_t)((trieIndex)[(offset)+((c)>>UTRIE2_SHIFT_2)]) \
     <<UTRIE2_INDEX_SHIFT)+ \
     ((c)&UTRIE2_DATA_MASK))
 #define _UTRIE2_INDEX_FROM_CP(trie, asciiOffset, c) \
     ((uint32_t)(c)<0xd800 ? \
-    _UTRIE2_INDEX_RAW(0, (trie)->index, c) : \
-    (uint32_t)(c)<=0xffff ? \
-    _UTRIE2_INDEX_RAW( \
-    (c)<=0xdbff ? UTRIE2_LSCP_INDEX_2_OFFSET-(0xd800>>UTRIE2_SHIFT_2) : 0, \
-    (trie)->index, c) : \
-    (uint32_t)(c)>0x10ffff ? \
-    (asciiOffset)+UTRIE2_BAD_UTF8_DATA_OFFSET : \
-    (c)>=(trie)->highStart ? \
-    (trie)->highValueIndex : \
-    _UTRIE2_INDEX_FROM_SUPP((trie)->index, c))
+        _UTRIE2_INDEX_RAW(0, (trie)->index, c) : \
+        (uint32_t)(c)<=0xffff ? \
+            _UTRIE2_INDEX_RAW( \
+                (c)<=0xdbff ? UTRIE2_LSCP_INDEX_2_OFFSET-(0xd800>>UTRIE2_SHIFT_2) : 0, \
+                (trie)->index, c) : \
+            (uint32_t)(c)>0x10ffff ? \
+                (asciiOffset)+UTRIE2_BAD_UTF8_DATA_OFFSET : \
+                (c)>=(trie)->highStart ? \
+                    (trie)->highValueIndex : \
+                    _UTRIE2_INDEX_FROM_SUPP((trie)->index, c))
 #define _UTRIE2_GET(trie, data, asciiOffset, c) \
     (trie)->data[_UTRIE2_INDEX_FROM_CP(trie, asciiOffset, c)]
 #define UTRIE2_GET16(trie, c) _UTRIE2_GET((trie), index, (trie)->indexLength, (c))
