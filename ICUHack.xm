@@ -339,6 +339,7 @@ uint32_t (*u_getUnicodeProperties)(UChar32, int32_t) = NULL;
 
 %group inlineEmojiData
 
+// https://github.com/unicode-org/icu/blob/main/icu4c/source/data/in/uemoji.icu
 %hookf(UDataMemory *, udata_openChoice, const char *path, const char *type, const char *name, UDataMemoryIsAcceptable *isAcceptable, void *context, UErrorCode *pErrorCode) {
     if (type && name && strcmp(type, "icu") == 0 && strcmp(name, "uemoji") == 0) {
         udata_open_custom(pErrorCode);

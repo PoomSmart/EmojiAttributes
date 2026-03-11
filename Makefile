@@ -1,5 +1,3 @@
-PACKAGE_VERSION = 1.9.0~b3
-
 ifeq ($(SIMULATOR),1)
 	TARGET = simulator:clang:latest:8.0
 	ARCHS = arm64 x86_64
