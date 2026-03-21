@@ -10,13 +10,13 @@ This framework is an intermediate layer between text display and text representa
 ### Character Set Addition
 Emoji character set is cached in bitmap format and retrievable from `CreateCharacterSetForFont()`. The set changes from version to version of iOS. We override this with the latest character set. To get the character set needed, we dump one from `libGSFontCache.dylib` which is what [EmojiCategory](https://github.com/PoomSmart/EmojiCategory) does. Without this override, emojis can be all shadowed (black out).
 
-### Emoji Presentation Addition (iOS 11+)
-As of iOS 11, a weird function `IsDefaultEmojiPresentation()` seems to determine which emojis are really supported by the system before showing them. The said representation is an array of emoji strings that can be easily overridden.
+### Emoji Presentation Addition (iOS 11 - 12.0)
+During iOS 11 - 12.0, a function `IsDefaultEmojiPresentation()` determines which emojis are really supported by the system before showing them. The said representation is an array of emoji strings that can be easily overridden. In newer iOS versions, Apple has switched to using ICU for this purpose.
 
-## CoreFoundation
+## CoreFoundation (iOS < 15)
 This framework handles display emojis in most native (UIKit) applications. `CFStringGetRangeOfCharacterClusterAtIndex()` consults the cached emoji character set to determine the index of the given character, taking into account that it can be one of the characters (cluster) of one single emoji. We as well override the character set. Without this workaround, unsupported emojis will be rendered as blank or "?" icon.
 
-## WebCore
+## WebCore (iOS < 10)
 This framework does a lot of things to displaying content in websites, including displaying emojis in web pages. Until at some point in the past, Apple hardcoded all emoji unicodes in here for iteration through characters in a webpage to apply a compatible (emoji) font for them. For present days, read ICU section below. Without this hack, emojis will be displayed as blank rectangles.
 
 ## TextInput (iOS < 10)
