@@ -170,11 +170,11 @@ bool (*IsDefaultEmojiPresentationUSet)(UChar32) = NULL;
         %init(FontAttributes2);
     }
 #if __LP64__
+    unicodeSet = uset_openEmpty();
+    for (int i = 0; i < presentationCount; ++i)
+        uset_add(unicodeSet, presentation[i]);
+    uset_freeze(unicodeSet);
     if (IS_IOS_BETWEEN_EEX(iOS_11_0, iOS_12_1)) {
-        unicodeSet = uset_openEmpty();
-        for (int i = 0; i < presentationCount; ++i)
-            uset_add(unicodeSet, presentation[i]);
-        uset_freeze(unicodeSet);
         characterSet = _CFCreateCharacterSetFromUSet(unicodeSet);
         CFRetain(characterSet);
         IsDefaultEmojiPresentation = (void (*)(void *))_PSFindSymbolReadable(ct, "__ZZL26IsDefaultEmojiPresentationjEN4$_138__invokeEPv");
