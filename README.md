@@ -26,4 +26,4 @@ This framework does a lot of things to displaying content in websites, including
 Apple has transitioned to be relying more on ICU API when it has to deal with emojis. Instead of hardcoding emoji codepoints in `CoreFoundation` framework, it directly consults ICU which already has similar information. At a high level, ICU embeds "props" data related to emojis inside `libicucore.A.dylib`. EmojiAttributes flexes its best to redirect readings of those data to be from its own.
 
 ## Emoji Size Fix (iOS 6 - 9)
-Remove WebCore/CoreText emoji size restriction. See [here](https://emojier.com/faq/15122z-ios-small-font-size-emoji-hell).
+Remove WebCore/CoreText emoji size restriction. See [related WebKit changes](https://trac.webkit.org/changeset/188737/webkit).
