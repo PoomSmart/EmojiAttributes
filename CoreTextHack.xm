@@ -37,6 +37,7 @@ CFDataRef (*XTCopyUncompressedBitmapRepresentation)(const UInt8 *, CFIndex);
         }
         CFDataRef uncompressedData = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, uncompressedSet, uncompressedSetLength, kCFAllocatorNull);
         CFCharacterSetRef ourSet = CFCharacterSetCreateWithBitmapRepresentation(kCFAllocatorDefault, uncompressedData);
+        CFRelease(uncompressedData);
         return ourSet;
     }
     return %orig(fontName);
@@ -89,12 +90,16 @@ static CFMutableDictionaryRef getCTFontInfo(CFDictionaryRef dict) {
                 ]
             }
         ]);
-        CFDictionarySetValue(attrs, CFSTR("AppleColorEmoji"), ace);
         long long symbolicTraitValue = 3221234688;
         CFNumberRef symbolicTraitRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberLongLongType, &symbolicTraitValue);
         CFDictionarySetValue(fontTraits, CFSTR("NSCTFontSymbolicTrait"), symbolicTraitRef);
         CFRelease(symbolicTraitRef);
+        CFDictionarySetValue(ace, CFSTR("NSCTFontTraitsAttribute"), fontTraits);
+        CFRelease(fontTraits);
+        CFDictionarySetValue(attrs, CFSTR("AppleColorEmoji"), ace);
+        CFRelease(ace);
         CFDictionarySetValue(ctFontInfo, CFSTR("Attrs"), attrs);
+        CFRelease(attrs);
     }
     return ctFontInfo;
 }

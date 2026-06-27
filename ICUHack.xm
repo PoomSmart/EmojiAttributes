@@ -123,6 +123,7 @@ static UCPTrie *legacy_ucptrie_openFromBinary(UCPTrieType type, UCPTrieValueWidt
         break;
     default:
         *pErrorCode = U_INVALID_FORMAT_ERROR;
+        uprv_free(trie);
         return nullptr;
     }
 
@@ -182,6 +183,14 @@ static UDataMemory *UDataMemory_createNewInstance(UErrorCode *pErr) {
     return This;
 }
 
+static void udata_open_custom_fail(UErrorCode *status, UErrorCode code) {
+    *status = code;
+    if (memory) {
+        udata_close(memory);
+        memory = nullptr;
+    }
+}
+
 static void udata_open_custom(UErrorCode *status) {
     static const char *xinaPath = "/var/LIY/Application Support/EmojiAttributes/uemoji.icu";
     int fd;
@@ -189,9 +198,18 @@ static void udata_open_custom(UErrorCode *status) {
     struct stat mystat;
     void *data;
 
+    if (memory && memory->mapAddr != nullptr) {
+        return;
+    }
+    if (memory) {
+        udata_close(memory);
+        memory = nullptr;
+    }
+
     memory = UDataMemory_createNewInstance(status);
     if (U_FAILURE(*status)) {
         HBLogError(@"[ICUHack] udata_open_custom instance failed with error %s", u_errorName(*status));
+        memory = nullptr;
         return;
     }
 
@@ -201,8 +219,8 @@ static void udata_open_custom(UErrorCode *status) {
     if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
         path = xinaPath;
         if (stat(path, &mystat) != 0 || mystat.st_size <= 0) {
-            *status = U_FILE_ACCESS_ERROR; // custom
             HBLogError(@"[ICUHack] udata_open_custom stat() failed with error %d", errno);
+            udata_open_custom_fail(status, U_FILE_ACCESS_ERROR);
             return;
         }
     }
@@ -210,16 +228,16 @@ static void udata_open_custom(UErrorCode *status) {
 
     fd = open(path, O_RDONLY);
     if (fd == -1) {
-        *status = U_FILE_ACCESS_ERROR; // custom
         HBLogError(@"[ICUHack] udata_open_custom open() failed with error %d", errno);
+        udata_open_custom_fail(status, U_FILE_ACCESS_ERROR);
         return;
     }
 
     data = mmap(0, length, PROT_READ, MAP_SHARED, fd, 0);
     close(fd);
     if (data == MAP_FAILED) {
-        *status = U_FILE_ACCESS_ERROR; // custom
         HBLogError(@"[ICUHack] udata_open_custom mmap() failed");
+        udata_open_custom_fail(status, U_FILE_ACCESS_ERROR);
         return;
     }
 
