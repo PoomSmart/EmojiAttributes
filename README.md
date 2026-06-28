@@ -27,3 +27,7 @@ Apple has transitioned to be relying more on ICU API when it has to deal with em
 
 ## Emoji Size Fix (iOS 6 - 9)
 Remove WebCore/CoreText emoji size restriction. See [related WebKit changes](https://trac.webkit.org/changeset/188737/webkit).
+
+# Building
+
+This tweak requires the modified version of [libroot](https://github.com/opa334/libroot) which supports iOS 6.
